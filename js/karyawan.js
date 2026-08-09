@@ -66,11 +66,101 @@ async function submitKaryawan() {
   setTimeout(() => { msg.style.display = 'none'; }, 3000);
 }
 
-async function deleteKaryawan(id) { 
-  if (!confirm('Hapus karyawan?')) return; 
-  await db.from('employees').delete().eq('id', id); 
-  loadKaryawan();
-  loadCabangList();
+async function deleteKaryawan(id) {
+  try {
+    // 1. Ambil detail data karyawan
+    const { data: emp, error: getErr } = await db
+      .from('employees')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (getErr || !emp) {
+      alert('Gagal mengambil data karyawan: ' + (getErr ? getErr.message : 'Karyawan tidak ditemukan'));
+      return;
+    }
+
+    // 2. Konfirmasi penghapusan menyeluruh
+    const confirmMsg = `Hapus karyawan "${emp.name}" (${emp.employee_id})?\n\n⚠️ PERINGATAN: Seluruh riwayat absensi, izin, dan data kehadiran karyawan ini juga akan dihapus secara permanen dari database.`;
+    if (!confirm(confirmMsg)) return;
+
+    // 3. Hapus seluruh data absensi dan izin milik karyawan ini
+    const { error: delAttErr } = await db
+      .from('attendance')
+      .delete()
+      .eq('employee_id', emp.employee_id);
+
+    if (delAttErr) {
+      console.warn('Gagal menghapus riwayat absensi:', delAttErr.message);
+    }
+
+    // 4. Hapus data karyawan dari tabel employees
+    const { error: delEmpErr } = await db
+      .from('employees')
+      .delete()
+      .eq('id', id);
+
+    if (delEmpErr) {
+      alert('Gagal menghapus karyawan: ' + delEmpErr.message);
+      return;
+    }
+
+    // 5. Catat aktivitas penghapusan ke log audit settings
+    try {
+      const { data: settingData } = await db
+        .from('settings')
+        .select('value')
+        .eq('key', 'deletion_history')
+        .maybeSingle();
+
+      let history = [];
+      if (settingData && settingData.value) {
+        try {
+          history = JSON.parse(settingData.value);
+        } catch (e) {
+          history = [];
+        }
+      }
+
+      history.unshift({
+        deleted_at: new Date().toISOString(),
+        admin_email: loggedInUserEmail || 'Unknown Admin',
+        employee_id: emp.employee_id,
+        employee_name: emp.name,
+        status: 'HAPUS KARYAWAN',
+        cabang: emp.cabang || '—',
+        absensi_created_at: new Date().toISOString(),
+        notes: 'Penghapusan akun karyawan & seluruh riwayat absensinya'
+      });
+
+      if (history.length > 200) history = history.slice(0, 200);
+
+      await db.from('settings').upsert({
+        key: 'deletion_history',
+        value: JSON.stringify(history)
+      }, { onConflict: 'key' });
+    } catch (logErr) {
+      console.warn('Gagal mencatat log penghapusan karyawan:', logErr);
+    }
+
+    // 6. Refresh semua tampilan terkait di dashboard
+    loadKaryawan();
+    loadCabangList();
+    if (typeof loadAbsensi === 'function') loadAbsensi();
+    if (typeof loadBelumAbsen === 'function') loadBelumAbsen();
+    if (typeof loadRaporEmpList === 'function') loadRaporEmpList();
+    if (typeof loadTotalKaryawan === 'function') loadTotalKaryawan();
+
+    if (typeof showToast === 'function') {
+      showToast(`Karyawan ${emp.name} dan seluruh datanya berhasil dihapus`, 'success');
+    } else {
+      alert(`✓ Karyawan ${emp.name} dan seluruh riwayat datanya telah berhasil dihapus.`);
+    }
+
+  } catch (err) {
+    console.error('Terjadi kesalahan saat menghapus karyawan:', err);
+    alert('Terjadi kesalahan saat menghapus data: ' + err.message);
+  }
 }
 
 async function editKaryawan(empId) {

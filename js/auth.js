@@ -8,7 +8,9 @@ setInterval(pingSupabase, 5 * 60 * 1000);
 
 async function pingSupabase() {
   try {
-    const res = await fetch(SUPABASE_URL + '/auth/v1/health');
+    const res = await fetch(SUPABASE_URL + '/auth/v1/health', {
+      headers: { 'apikey': SUPABASE_ANON_KEY }
+    });
     if (res.ok) {
       localStorage.setItem('sb_last_ping', new Date().toISOString());
       console.log('[Keep-Alive] Ping Supabase OK —', new Date().toLocaleTimeString('id-ID', tz));
@@ -26,6 +28,7 @@ async function checkSupabasePaused() {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6000);
     const res = await fetch(SUPABASE_URL + '/auth/v1/health', {
+      headers: { 'apikey': SUPABASE_ANON_KEY },
       signal: controller.signal
     });
     clearTimeout(timeout);

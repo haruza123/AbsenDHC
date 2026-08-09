@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Kios Absensi Kasir — BHC Professional</title>
+  
+  <!-- CDN Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="logo-bhc.png">
+  <link rel="shortcut icon" type="image/png" href="logo-bhc.png">
+
+  <!-- Modular Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    /* Kiosk-specific layout styles */
+    .kiosk-body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .kiosk-navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--gold-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .kiosk-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--gold-light);
+    }
+    .kiosk-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+      width: 100%;
+      flex: 1;
+    }
+    .kiosk-footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+    .admin-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .admin-link:hover {
+      color: var(--gold);
+      border-color: var(--gold-border);
+      background: var(--gold-dim);
+    }
+    @media (max-width: 600px) {
+      .kiosk-navbar {
+        padding: 12px 14px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .kiosk-brand { font-size: 16px; }
+      .kiosk-container { padding: 16px 10px 30px; }
+    }
+  </style>
+</head>
+<body class="kiosk-body">
+
+<!-- TOAST NOTIFICATION CONTAINER -->
+<div id="toast-container" style="position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 380px; pointer-events: none;"></div>
+
+<!-- KIOSK TOPBAR -->
+<header class="kiosk-navbar">
+  <div class="kiosk-brand">
+    <img src="logo-bhc.png" class="logo-img-sm" alt="BHC">
+    <div>
+      <div>BHC PROFESSIONAL</div>
+      <div style="font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-family: 'Inter', sans-serif; font-weight: 600;">Kios Absensi Kasir</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+    <!-- Live Clock -->
+    <div style="text-align: right;">
+      <div id="clock-time" class="clock-time" style="font-size: 16px;">--:--:--</div>
+      <div id="clock-date" class="clock-date" style="font-size: 11px;">--</div>
+    </div>
+
+    <!-- Pilih Cabang Kasir -->
+    <select id="scanner-cabang" class="field-input" style="width: 180px; background: var(--surface2); border-color: var(--gold-border); font-size: 12px;">
+      <option value="">Pilih Cabang...</option>
+    </select>
+
+    <!-- Tombol Masuk Admin -->
+    <a href="index.html" class="admin-link" title="Buka Dashboard Admin Penuh">
+      <span>🔐</span> Panel Admin
+    </a>
+  </div>
+</header>
+
+<!-- MAIN SCANNER CONTAINER -->
+<main class="kiosk-container">
+  
+  <div class="scanner-grid">
+    <!-- Kiri: Kamera Scanner -->
+    <div class="scanner-camera-card">
+      <div class="chart-title" style="margin-bottom: 14px;">Webcam Scanner Kasir</div>
+
+      <!-- Cooldown & Status Indicator -->
+      <div id="scanner-cooldown-box" style="width: 100%; max-width: 440px; margin-bottom: 12px; padding: 8px 12px; border-radius: 8px; background: rgba(39, 174, 96, 0.1); border: 1px solid rgba(39, 174, 96, 0.25); display: flex; flex-direction: column; gap: 6px; transition: all 0.3s ease;">
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+          <span id="scanner-status-text" style="color: var(--green); font-weight: 600; display: flex; align-items: center; gap: 6px;">
+            <span class="live-dot" style="background: var(--green); width: 7px; height: 7px;"></span> Scanner Siap
+          </span>
+          <span id="scanner-cooldown-timer" style="color: var(--muted); font-weight: 700; font-family: monospace; font-size: 11px;">Ready</span>
+        </div>
+        <div style="width: 100%; height: 3px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden;">
+          <div id="scanner-cooldown-bar" style="width: 0%; height: 100%; background: var(--gold); transition: width 0.08s linear;"></div>
+        </div>
+      </div>
+      
+      <!-- Frame Reader Kamera -->
+      <div id="scanner-container" style="width: 100%; max-width: 440px; aspect-ratio: 4/3; border: 2px dashed var(--gold-border); border-radius: 12px; overflow: hidden; background: #080808; display: flex; align-items: center; justify-content: center; position: relative;">
+        <div id="scanner-reader" style="width: 100%; height: 100%; display: none;"></div>
+        <!-- Laser Scan Line Overlay -->
+        <div id="scanner-laser" class="laser-scanning" style="position: absolute; left: 0; right: 0; height: 3px; background: var(--gold); opacity: 0.7; box-shadow: 0 0 8px var(--gold); top: 0; pointer-events: none; display: none; z-index: 5;"></div>
+        <!-- Flash Overlay for success/error feedback -->
+        <div id="scanner-flash" style="position: absolute; inset: 0; pointer-events: none; opacity: 0; z-index: 10;"></div>
+        <div id="scanner-placeholder" style="position: absolute; display: flex; flex-direction: column; align-items: center; color: var(--muted); font-size: 13px;">
+          <span style="font-size: 36px; display: block; margin-bottom: 10px;">📷</span>
+          Klik tombol di bawah untuk mengaktifkan scanner
+        </div>
+      </div>
+      
+      <!-- Zoom Slider Container -->
+      <div id="scanner-zoom-container" style="display: none; width: 100%; max-width: 360px; margin-top: 12px; text-align: left; background: var(--surface); border: 1px solid rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 10px;">
+        <label class="field-label" style="display: flex; justify-content: space-between; margin-bottom: 6px; user-select: none;">
+          <span style="font-size: 11px; font-weight:600; letter-spacing: 0.5px;">🔍 Zoom Kamera</span>
+          <span id="zoom-val" style="color: var(--gold); font-size: 11px; font-weight:700;">1.0x</span>
+        </label>
+        <input type="range" id="scanner-zoom" style="width: 100%; accent-color: var(--gold); cursor: pointer;" min="1" max="5" step="0.1" value="1" oninput="applyZoom(this.value)" />
+      </div>
+      
+      <button class="btn btn-gold" id="btn-toggle-scanner" onclick="toggleScanner()" style="margin-top: 20px; min-width: 200px; padding: 12px 20px; font-size: 14px;">🎥 Aktifkan Scanner</button>
+      
+      <select id="scanner-camera-facing" onchange="onCameraFacingChange()" class="field-input" style="width: 200px; margin-top: 10px; background: var(--surface2); border-color: rgba(255,255,255,0.07); color: var(--text); text-align: center;">
+        <option value="environment" selected>📷 Kamera Belakang</option>
+        <option value="user">🤳 Kamera Depan (Selfie)</option>
+      </select>
+      
+      <!-- Input Manual ID Karyawan -->
+      <div style="margin-top: 24px; width: 100%; max-width: 320px; border-top: 1px solid var(--border); padding-top: 18px;">
+        <span style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Input Manual ID (Jika Kartu Tertinggal)</span>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="manual-emp-id" class="field-input" placeholder="Contoh: EMP001" style="text-align: center; font-weight: 600;" onkeydown="if(event.key==='Enter')submitManualScan()" />
+          <button class="btn btn-outline" onclick="submitManualScan()">Absen</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Kanan: Hasil Pindai Terakhir -->
+    <div class="chart-card" style="display: flex; flex-direction: column;">
+      <div class="chart-title">Hasil Pindai Terakhir</div>
+      
+      <div id="scan-result-box" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+        <!-- Default placeholder -->
+        <div id="scan-result-empty" style="text-align: center; color: var(--muted);">
+          <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.3;">🔲</div>
+          <p style="font-size: 14px; font-weight: 600; color: var(--text);">Arahkan Kartu QR ke Kamera</p>
+          <p style="font-size: 12px; margin-top: 6px; line-height: 1.5; color: var(--muted);">Posisikan QR ID Card karyawan tepat di dalam kotak kamera untuk scan masuk / keluar otomatis.</p>
+        </div>
+        
+        <!-- Success Card -->
+        <div id="scan-result-card" style="display: none; width: 100%; background: var(--surface2); border: 1px solid var(--gold-border); border-radius: 14px; padding: 24px; text-align: center; position: relative;">
+          <div id="scan-result-status-badge" class="badge b-green" style="font-size: 13px; padding: 5px 14px; margin-bottom: 16px;">Masuk (Hadir)</div>
+          <div id="scan-result-avatar" style="width: 72px; height: 72px; border-radius: 50%; background: var(--gold-dim); border: 2px solid var(--gold); color: var(--gold-light); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; margin: 0 auto 12px;">BS</div>
+          <h3 id="scan-result-name" style="font-family: 'Playfair Display', serif; font-size: 20px; color: var(--gold-light); margin-bottom: 4px;">—</h3>
+          <div id="scan-result-id" style="font-family: monospace; font-size: 14px; color: var(--gold); margin-bottom: 14px;">—</div>
+          
+          <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px; margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; font-size: 13px; text-align: left; gap: 10px;">
+            <div><span style="color: var(--muted);">Waktu:</span> <strong id="scan-result-time" style="color: var(--text);">--:--</strong></div>
+            <div><span style="color: var(--muted);">Cabang:</span> <strong id="scan-result-cabang" style="color: var(--text);">Pusat</strong></div>
+          </div>
+        </div>
+        
+        <!-- Error Box -->
+        <div id="scan-result-error" style="display: none; width: 100%; background: rgba(192,57,43,0.08); border: 1px solid rgba(192,57,43,0.2); border-radius: 14px; padding: 24px; text-align: center; color: #e57373; font-size: 13px; font-weight: 500;">
+          <div style="font-size: 36px; margin-bottom: 10px;">🚫</div>
+          <div id="scan-result-error-msg" style="line-height: 1.5;">Kode QR tidak valid atau Karyawan tidak terdaftar.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: Belum Absen Hari Ini -->
+  <div class="chart-card" style="margin-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <div class="chart-title" style="margin-bottom: 0;">Status Kehadiran Hari Ini di Cabang</div>
+      <button class="btn btn-ghost" style="font-size: 11px; padding: 5px 10px;" onclick="loadBelumAbsen()">⟳ Refresh</button>
+    </div>
+    <div id="belum-absen-wrap" style="max-height: 280px; overflow-y: auto;">
+      <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 13px;">Pilih cabang untuk melihat data</div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="kiosk-footer">
+  BHC Professional Attendance & Cashier System &copy; 2026 &middot; Mode Layar Penuh Kios Kasir
+</footer>
+
+<!-- Modular Scripts -->
+<script src="js/config.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/scanner.js"></script>
+<script>
+  // Inisialisasi Kios Scanner
+  document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Muat daftar cabang
+    try {
+      const { data } = await db.from('employees').select('cabang');
+      const unique = [...new Set((data || []).map(r => r.cabang).filter(Boolean))];
+      const scanCabang = document.getElementById('scanner-cabang');
+      if (scanCabang) {
+        scanCabang.innerHTML = '<option value="">Pilih Cabang Aktif...</option>' +
+          unique.map(c => `<option value="${c}">${c}</option>`).join('');
+        
+        // Cek apakah ada cabang tersimpan sebelumnya di HP/browser kasir
+        const savedCabang = localStorage.getItem('kiosk_cabang');
+        if (savedCabang && unique.includes(savedCabang)) {
+          scanCabang.value = savedCabang;
+        } else if (unique.length > 0) {
+          scanCabang.value = unique[0];
+          localStorage.setItem('kiosk_cabang', unique[0]);
+        }
+
+        scanCabang.addEventListener('change', () => {
+          localStorage.setItem('kiosk_cabang', scanCabang.value);
+          loadBelumAbsen();
+        });
+      }
+    } catch (e) {
+      console.warn('Gagal memuat cabang:', e);
+    }
+
+    // 2. Muat pengaturan jam kerja & notifikasi
+    if (typeof loadSettings === 'function') {
+      loadSettings();
+    }
+
+    // 3. Muat status belum absen
+    if (typeof loadBelumAbsen === 'function') {
+      loadBelumAbsen();
+    }
+  });
+</script>
+
+</body>
+</html>
