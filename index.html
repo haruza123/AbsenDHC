@@ -335,6 +335,7 @@
       <div class="header-actions">
         <select id="filter-cabang-karyawan" onchange="loadKaryawan()"><option value="">Semua Cabang</option></select>
         <button class="btn btn-ghost" onclick="loadKaryawan()">⟳ Refresh</button>
+        <button class="btn btn-outline" onclick="syncAndCleanOrphanAttendance()" title="Bersihkan data absensi dari karyawan yang sudah dihapus">🧹 Sinkron Data</button>
         <button class="btn btn-gold" onclick="openModal('karyawan')">+ Tambah Karyawan</button>
       </div>
     </div>
@@ -392,6 +393,20 @@
         <br><br>
         Pastikan Row Level Security (RLS) sudah diaktifkan di semua tabel untuk melindungi data absensi Anda dari akses publik langsung.
       </p>
+    </div>
+
+    <!-- SINKRONISASI & PEMBERSIHAN DATA -->
+    <div class="settings-card" style="border-color: rgba(201,169,110,0.35);">
+      <div class="settings-card-title">🧹 Sinkronisasi & Pembersihan Data Orphan</div>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.6;">
+        Fitur ini memeriksa seluruh riwayat absensi dan mencocokkannya dengan daftar karyawan aktif. Jika ditemukan data absensi dari karyawan yang sudah dihapus dari sistem, fitur ini akan membersihkan data tersebut agar database tetap sinkron dan rapi.
+      </p>
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <button class="btn btn-gold" id="btn-sync-orphan" onclick="syncAndCleanOrphanAttendance()">
+          <span>🧹</span> Cek & Bersihkan Data Orphan
+        </button>
+      </div>
+      <div id="sync-orphan-status" style="margin-top: 12px; font-size: 12px; display: none; line-height: 1.5;"></div>
     </div>
 
     <!-- LOG AUDIT PENGHAPUSAN -->

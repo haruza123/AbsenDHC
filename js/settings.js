@@ -48,6 +48,136 @@ async function saveSettings() {
   setTimeout(() => { msg.style.display = 'none'; }, 3000);
 }
 
+// ===== SINKRONISASI & PEMBERSIHAN DATA ORPHAN =====
+async function syncAndCleanOrphanAttendance() {
+  const btn = document.getElementById('btn-sync-orphan');
+  const statusEl = document.getElementById('sync-orphan-status');
+  if (btn) btn.disabled = true;
+  if (statusEl) {
+    statusEl.innerHTML = '<span class="live-dot" style="background:var(--gold);width:7px;height:7px;display:inline-block;margin-right:6px;"></span> Memeriksa database...';
+    statusEl.style.display = 'block';
+    statusEl.style.color = 'var(--muted)';
+  }
+
+  try {
+    // 1. Ambil seluruh list employee_id aktif di tabel employees
+    const { data: emps, error: empErr } = await db.from('employees').select('employee_id, name');
+    if (empErr) throw empErr;
+
+    const validEmpIds = new Set((emps || []).map(e => (e.employee_id || '').toUpperCase().trim()));
+
+    // 2. Ambil seluruh data absensi
+    const { data: attRows, error: attErr } = await db.from('attendance').select('id, employee_id, employee_name');
+    if (attErr) throw attErr;
+
+    // 3. Cari absensi yang employee_id-nya sudah tidak terdaftar di tabel employees
+    const orphans = (attRows || []).filter(r => {
+      const id = (r.employee_id || '').toUpperCase().trim();
+      return !id || !validEmpIds.has(id);
+    });
+
+    if (orphans.length === 0) {
+      if (statusEl) {
+        statusEl.innerHTML = '✅ <b>Database Sinkron & Bersih!</b> Tidak ditemukan data absensi dari karyawan yang sudah dihapus.';
+        statusEl.style.color = 'var(--green)';
+      }
+      if (typeof showToast === 'function') {
+        showToast('✓ Database sinkron & bersih. Tidak ada data absensi orphan.', 'success');
+      } else {
+        alert('✓ Database sinkron & bersih. Seluruh data absensi sesuai dengan daftar karyawan aktif.');
+      }
+      return;
+    }
+
+    // Kelompokkan data orphan berdasarkan employee_id
+    const orphanMap = {};
+    orphans.forEach(r => {
+      const key = r.employee_id || '(Tanpa ID)';
+      if (!orphanMap[key]) orphanMap[key] = { count: 0, name: r.employee_name || 'Tanpa Nama' };
+      orphanMap[key].count++;
+    });
+
+    const orphanSummary = Object.entries(orphanMap)
+      .map(([id, info]) => `• ${id} (${info.name}): ${info.count} data`)
+      .join('\n');
+
+    const confirmMsg = `Ditemukan ${orphans.length} data absensi dari karyawan yang sudah tidak ada di database:\n\n${orphanSummary}\n\nApakah Anda ingin menghapus seluruh ${orphans.length} data absensi ini agar database bersih dan sinkron?`;
+
+    if (!confirm(confirmMsg)) {
+      if (statusEl) {
+        statusEl.innerHTML = `⚠️ Ditemukan <b>${orphans.length}</b> data absensi orphan. Pembersihan dibatalkan oleh pengguna.`;
+        statusEl.style.color = 'var(--yellow)';
+      }
+      return;
+    }
+
+    // 4. Hapus seluruh data orphan dari tabel attendance
+    const orphanIds = orphans.map(r => r.id);
+    const { error: delErr } = await db.from('attendance').delete().in('id', orphanIds);
+    if (delErr) throw delErr;
+
+    // 5. Catat ke audit log riwayat penghapusan
+    try {
+      const { data: settingData } = await db
+        .from('settings')
+        .select('value')
+        .eq('key', 'deletion_history')
+        .maybeSingle();
+
+      let history = [];
+      if (settingData && settingData.value) {
+        try { history = JSON.parse(settingData.value); } catch (e) { history = []; }
+      }
+
+      history.unshift({
+        deleted_at: new Date().toISOString(),
+        admin_email: loggedInUserEmail || 'Admin',
+        employee_id: Object.keys(orphanMap).join(', '),
+        employee_name: 'Pembersihan Massal Data Orphan',
+        status: 'SINKRONISASI DATABASE',
+        cabang: 'Semua Cabang',
+        absensi_created_at: new Date().toISOString(),
+        notes: `Pembersihan ${orphans.length} baris absensi dari karyawan yang telah dihapus`
+      });
+
+      if (history.length > 200) history = history.slice(0, 200);
+
+      await db.from('settings').upsert({
+        key: 'deletion_history',
+        value: JSON.stringify(history)
+      }, { onConflict: 'key' });
+    } catch (e) {
+      console.warn('Gagal mencatat log sync:', e);
+    }
+
+    if (statusEl) {
+      statusEl.innerHTML = `✅ <b>Berhasil!</b> ${orphans.length} data absensi dari karyawan yang telah dihapus berhasil dibersihkan.`;
+      statusEl.style.color = 'var(--gold)';
+    }
+
+    if (typeof showToast === 'function') {
+      showToast(`✓ Berhasil membersihkan ${orphans.length} data absensi orphan.`, 'success');
+    } else {
+      alert(`✓ Berhasil membersihkan ${orphans.length} data absensi orphan.`);
+    }
+
+    // Refresh semua tampilan terkait
+    if (typeof loadAbsensi === 'function') loadAbsensi();
+    if (typeof loadKaryawan === 'function') loadKaryawan();
+    if (typeof loadDeletionLogs === 'function') loadDeletionLogs();
+
+  } catch (err) {
+    console.error('Error saat sinkronisasi:', err);
+    if (statusEl) {
+      statusEl.innerHTML = '❌ Gagal sinkronisasi: ' + err.message;
+      statusEl.style.color = '#e57373';
+    }
+    alert('Terjadi kesalahan saat sinkronisasi: ' + err.message);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
 async function loadDeletionLogs() {
   const wrap = document.getElementById('deletion-logs-wrap');
   if (!wrap) return;
