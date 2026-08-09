@@ -43,9 +43,9 @@
     .lc2::after { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }
     .login-header { text-align: center; margin-bottom: 32px; }
     .login-icon { margin-bottom: 10px; display: block; filter: drop-shadow(0 0 10px rgba(201,169,110,0.4)); }
-    .logo-img { height: 50px; object-fit: contain; mix-blend-mode: multiply; }
-    .logo-img-sm { height: 36px; object-fit: contain; mix-blend-mode: multiply; }
-    .logo-img-xs { height: 24px; object-fit: contain; mix-blend-mode: multiply; vertical-align: middle; }
+    .logo-img { height: 50px; object-fit: contain; filter: brightness(1.1) contrast(1.1); background: rgba(255,255,255,0.9); border-radius: 8px; padding: 4px 8px; }
+    .logo-img-sm { height: 36px; object-fit: contain; filter: brightness(1.1) contrast(1.1); background: rgba(255,255,255,0.9); border-radius: 6px; padding: 3px 6px; }
+    .logo-img-xs { height: 24px; object-fit: contain; filter: brightness(1.1) contrast(1.1); background: rgba(255,255,255,0.9); border-radius: 4px; padding: 2px 5px; vertical-align: middle; }
     .login-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--gold-light); }
     .login-sub { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
     .login-divider { display: flex; align-items: center; gap: 10px; margin: 14px 0 28px; }
@@ -244,20 +244,32 @@
     .empty-state { text-align: center; padding: 56px; color: var(--muted); }
     .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.3; }
 
-    /* ===== HAMBURGER (mobile) ===== */
+    /* ===== TOPBAR (mobile) ===== */
     .topbar {
       display: none;
-      position: fixed; top: 0; left: 0; right: 0; height: 56px;
-      background: var(--surface); border-bottom: 1px solid var(--gold-border);
+      position: fixed; top: 0; left: 0; right: 0; height: 60px;
+      background: linear-gradient(180deg, var(--surface) 0%, rgba(17,17,17,0.97) 100%);
+      border-bottom: 1px solid var(--gold-border);
       align-items: center; justify-content: space-between;
       padding: 0 16px; z-index: 99;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
-    .topbar-brand { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 900; color: var(--gold-light); }
+    .topbar-brand {
+      font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 900;
+      color: var(--gold-light); display: flex; align-items: center; gap: 8px;
+    }
+    .topbar-clock {
+      font-size: 12px; font-weight: 600; color: var(--gold);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .topbar-live { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 1.5s ease infinite; }
     .hamburger {
-      width: 36px; height: 36px; border: 1px solid var(--gold-border);
-      border-radius: 8px; background: transparent; cursor: pointer;
+      width: 38px; height: 38px; border: 1px solid var(--gold-border);
+      border-radius: 10px; background: var(--gold-dim); cursor: pointer;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+      transition: all 0.2s;
     }
+    .hamburger:active { transform: scale(0.92); }
     .hamburger span { display: block; width: 18px; height: 2px; background: var(--gold); border-radius: 2px; transition: all 0.3s; }
     .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
     .hamburger.open span:nth-child(2) { opacity: 0; }
@@ -265,40 +277,88 @@
 
     .sidebar-overlay {
       display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.6); z-index: 98; backdrop-filter: blur(2px);
+      background: rgba(0,0,0,0.6); z-index: 98; backdrop-filter: blur(4px);
     }
     .sidebar-overlay.show { display: block; }
+
+    /* ===== BOTTOM NAV (mobile) ===== */
+    .bottom-nav {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--surface); border-top: 1px solid var(--gold-border);
+      z-index: 97; padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .bottom-nav-inner {
+      display: flex; justify-content: space-around; align-items: center;
+      max-width: 500px; margin: 0 auto;
+    }
+    .bottom-nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 6px 10px; border-radius: 10px; cursor: pointer;
+      color: var(--muted); font-size: 9px; font-weight: 600;
+      letter-spacing: 0.3px; transition: all 0.2s; border: none;
+      background: transparent; font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent; min-width: 52px;
+    }
+    .bottom-nav-item svg { width: 20px; height: 20px; }
+    .bottom-nav-item.active {
+      color: var(--gold); background: var(--gold-dim);
+    }
+    .bottom-nav-item:active { transform: scale(0.9); }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 900px) {
       .topbar { display: flex; }
-      .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; top: 0; z-index: 99; }
+      .bottom-nav { display: block; }
+      .sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); top: 0; z-index: 99; }
       .sidebar.open { transform: translateX(0); }
-      .main { margin-left: 0; padding: 72px 16px 16px; }
-      .stats { grid-template-columns: repeat(2,1fr); }
+      .sidebar-footer { display: none; }
+      .main { margin-left: 0; padding: 72px 14px 80px; }
+      .stats { grid-template-columns: repeat(2,1fr); gap: 10px; }
       .charts { grid-template-columns: 1fr; }
-      .page-header { flex-direction: column; gap: 12px; }
-      .header-actions { width: 100%; flex-wrap: wrap; }
+      .page-header {
+        flex-direction: column; gap: 10px;
+        padding-bottom: 16px; margin-bottom: 18px;
+      }
+      .page-title { font-size: 22px; }
+      .page-sub { font-size: 12px; }
+      .header-actions { width: 100%; flex-wrap: wrap; gap: 8px; }
+      .header-actions .btn { flex: 1; min-width: 120px; justify-content: center; }
       .form-row { grid-template-columns: 1fr; }
       .table-header { flex-direction: column; align-items: flex-start; gap: 10px; }
       .search-input { width: 100%; }
-      .modal { width: 95vw; padding: 22px; }
+      .modal { width: 95vw; padding: 20px; max-height: 90vh; overflow-y: auto; border-radius: 20px; }
+      .modal-title { font-size: 16px; }
+      .stat-card { padding: 14px 12px; border-radius: 14px; }
+      .stat-value { font-size: 26px; }
+      .stat-label { font-size: 9px; }
+      .chart-card { border-radius: 14px; padding: 16px; }
+      .table-card { border-radius: 14px; overflow: hidden; }
+      .settings-card { border-radius: 14px; padding: 18px; }
+      .filters { gap: 8px; }
+      .filters select, .filters input[type=date], .filters input[type=month] {
+        flex: 1; min-width: 0; font-size: 12px; padding: 10px 12px; border-radius: 10px;
+      }
+      .btn { padding: 10px 14px; font-size: 12px; border-radius: 10px; }
+      .login-card { margin: 16px; padding: 28px 24px; }
+      .login-title { font-size: 20px; }
     }
 
     @media (max-width: 480px) {
-      .stats { grid-template-columns: repeat(2,1fr); gap: 10px; }
-      .stat-card { padding: 14px 12px; }
-      .stat-value { font-size: 24px; }
+      .main { padding: 68px 10px 80px; }
       .page-title { font-size: 20px; }
-      .main { padding: 68px 12px 12px; }
-      .btn { padding: 8px 12px; font-size: 12px; }
-      .filters select, .filters input { font-size: 12px; padding: 7px 10px; }
-      td { padding: 9px 12px; font-size: 12px; }
-      thead th { padding: 9px 12px; }
+      .stat-card { padding: 12px 10px; }
+      .stat-value { font-size: 22px; }
+      .header-actions .btn { font-size: 11px; padding: 9px 10px; min-width: 0; flex: 1; }
+      td { padding: 9px 10px; font-size: 12px; }
+      thead th { padding: 9px 10px; font-size: 9px; }
       .chart-wrap { height: 160px; }
       .pagination { flex-direction: column; gap: 8px; align-items: flex-start; }
       .table-card { overflow-x: auto; }
-      table { min-width: 600px; }
+      table { min-width: 550px; }
+      .scanner-camera-card { padding: 16px 10px !important; }
+      .field-input { font-size: 14px; padding: 12px 14px; border-radius: 10px; }
+      .modal { padding: 18px; }
     }
 
     /* ===== PRINT MEDIA ===== */
@@ -457,11 +517,36 @@
 <!-- ===== TOPBAR (mobile) ===== -->
 <div class="topbar">
   <span class="topbar-brand"><img src="logo-bhc.png" class="logo-img-xs" alt="BHC"> BHC</span>
-  <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
-    <span></span><span></span><span></span>
-  </button>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span class="topbar-clock"><span class="topbar-live"></span> <span id="clock-time-mobile">--:--</span></span>
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 </div>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- ===== BOTTOM NAV (mobile) ===== -->
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bottom-nav-item active" data-sec="scanner" onclick="showSection('scanner',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Scanner
+    </button>
+    <button class="bottom-nav-item" data-sec="absensi" onclick="showSection('absensi',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Absensi
+    </button>
+    <button class="bottom-nav-item" data-sec="karyawan" onclick="showSection('karyawan',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Karyawan
+    </button>
+    <button class="bottom-nav-item" data-sec="settings" onclick="showSection('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </button>
+  </div>
+</div>
 
 <!-- ===== LOGIN OVERLAY ===== -->
 <div id="login-overlay">
@@ -1131,8 +1216,11 @@ function playAudioTone(success) {
 
 // ---- CLOCK ----
 function updateClock() {
-  document.getElementById('clock-time').textContent = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit', ...tz });
+  const timeStr = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit', ...tz });
+  document.getElementById('clock-time').textContent = timeStr;
   document.getElementById('clock-date').textContent = new Date().toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'short', year:'numeric', ...tz });
+  const mobileClk = document.getElementById('clock-time-mobile');
+  if (mobileClk) mobileClk.textContent = timeStr;
 }
 updateClock(); setInterval(updateClock, 1000);
 
@@ -1295,6 +1383,7 @@ function showSection(name, el) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + name).classList.add('active');
   document.querySelectorAll('.nav-item[data-sec]').forEach(n => n.classList.toggle('active', n.dataset.sec === name));
+  document.querySelectorAll('.bottom-nav-item[data-sec]').forEach(n => n.classList.toggle('active', n.dataset.sec === name));
   
   if (name === 'absensi') loadAbsensi();
   if (name === 'rekap') loadRekap();
