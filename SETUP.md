@@ -58,7 +58,53 @@ CREATE TABLE IF NOT EXISTS attendance (
 
 ---
 
-## 2. Hubungkan Proyek Supabase Anda
+## 2. Keamanan Database (Row Level Security / RLS)
+
+Untuk melindungi data dari manipulasi pihak tidak berwenang melalui `anon_key`, jalankan query SQL berikut di **Supabase SQL Editor** untuk mengaktifkan Row Level Security (RLS):
+
+```sql
+-- 1. Aktifkan RLS pada seluruh tabel
+ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
+ALTER TABLE attendance ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+
+-- 2. Kebijakan untuk Tabel 'employees'
+-- Anon (publik/kamera kasir) & Authenticated (admin) boleh membaca data karyawan
+CREATE POLICY "Allow read employees for all" ON employees
+  FOR SELECT USING (true);
+
+-- Hanya Admin terautentikasi yang boleh menambah, mengubah, dan menghapus data karyawan
+CREATE POLICY "Allow full access for authenticated admins on employees" ON employees
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- 3. Kebijakan untuk Tabel 'attendance'
+-- Anon & Authenticated boleh melihat dan mencatat absensi (insert/scan kasir)
+CREATE POLICY "Allow read attendance for all" ON attendance
+  FOR SELECT USING (true);
+
+CREATE POLICY "Allow insert attendance for all" ON attendance
+  FOR INSERT WITH CHECK (true);
+
+-- Hanya Admin terautentikasi yang boleh mengedit atau menghapus riwayat absensi
+CREATE POLICY "Allow update and delete attendance for authenticated only" ON attendance
+  FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Allow delete attendance for authenticated only" ON attendance
+  FOR DELETE TO authenticated USING (true);
+
+-- 4. Kebijakan untuk Tabel 'settings'
+-- Boleh dibaca oleh aplikasi untuk membaca jam kerja & status WA
+CREATE POLICY "Allow read settings for all" ON settings
+  FOR SELECT USING (true);
+
+-- Hanya Admin terautentikasi yang boleh mengubah konfigurasi sistem
+CREATE POLICY "Allow full access for authenticated admins on settings" ON settings
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+```
+
+---
+
+## 3. Hubungkan Proyek Supabase Anda
 
 Buka file `absen-kasir/dashboard.html` dan ganti konstanta berikut dengan konfigurasi Supabase Anda:
 ```javascript
@@ -68,7 +114,7 @@ const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
 
 ---
 
-## 3. Cara Penggunaan Sistem Kasir
+## 4. Cara Penggunaan Sistem Kasir
 
 ### A. Membuat & Mencetak Kartu QR Karyawan
 1. Login ke `absen-kasir/dashboard.html` menggunakan email admin Anda.
@@ -91,7 +137,7 @@ const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
 
 ---
 
-## 4. Keuntungan Sistem ini
+## 5. Keuntungan Sistem ini
 * **Aman:** Karyawan tidak bisa men-scan QR code sendiri dari luar toko, karena proses scan dikontrol sepenuhnya oleh kasir di kasir cabang.
 * **Cepat:** Karyawan tidak perlu mengetik nama atau ID, cukup menunjukkan kartu ke webcam kasir.
 * **Auto-detect:** Sistem kasir secara cerdas membedakan absen masuk dan keluar berdasarkan log harian di database Supabase.
