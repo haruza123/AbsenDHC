@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kasir & Admin Dashboard — Barbershop</title>
+  <title>Kasir & Admin Dashboard — BHC Professional</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -42,7 +42,10 @@
     .lc2::before { bottom: 10px; left: 10px; border-width: 0 0 2px 2px; border-radius: 0 0 0 3px; }
     .lc2::after { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }
     .login-header { text-align: center; margin-bottom: 32px; }
-    .login-icon { font-size: 32px; margin-bottom: 10px; display: block; filter: drop-shadow(0 0 10px rgba(201,169,110,0.4)); }
+    .login-icon { margin-bottom: 10px; display: block; filter: drop-shadow(0 0 10px rgba(201,169,110,0.4)); }
+    .logo-img { height: 50px; object-fit: contain; mix-blend-mode: multiply; }
+    .logo-img-sm { height: 36px; object-fit: contain; mix-blend-mode: multiply; }
+    .logo-img-xs { height: 24px; object-fit: contain; mix-blend-mode: multiply; vertical-align: middle; }
     .login-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--gold-light); }
     .login-sub { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
     .login-divider { display: flex; align-items: center; gap: 10px; margin: 14px 0 28px; }
@@ -441,7 +444,7 @@
 
 <!-- ===== TOPBAR (mobile) ===== -->
 <div class="topbar">
-  <span class="topbar-brand">✂️ BARBERSHOP</span>
+  <span class="topbar-brand"><img src="logo-bhc.png" class="logo-img-xs" alt="BHC"> BHC</span>
   <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
     <span></span><span></span><span></span>
   </button>
@@ -452,8 +455,8 @@
 <div id="login-overlay">
   <div class="login-card lc2">
     <div class="login-header">
-      <span class="login-icon">✂️</span>
-      <div class="login-title">BARBERSHOP</div>
+      <span class="login-icon"><img src="logo-bhc.png" class="logo-img" alt="BHC Professional"></span>
+      <div class="login-title">BHC PROFESSIONAL</div>
       <div class="login-sub">Kasir & Admin Panel</div>
     </div>
     <div class="login-divider">
@@ -463,7 +466,7 @@
     </div>
     <div class="login-field">
       <label class="login-label">Email Admin/Kasir</label>
-      <input class="login-input" type="email" id="login-email" placeholder="admin@barbershop.com" />
+      <input class="login-input" type="email" id="login-email" placeholder="admin@bhc.com" />
     </div>
     <div class="login-field">
       <label class="login-label">Password</label>
@@ -496,8 +499,8 @@
 <!-- ===== SIDEBAR ===== -->
 <aside class="sidebar">
   <div class="sidebar-brand">
-    <span class="brand-icon">✂️</span>
-    <div class="brand-name">BARBERSHOP</div>
+    <span class="brand-icon"><img src="logo-bhc.png" class="logo-img-sm" alt="BHC"></span>
+    <div class="brand-name">BHC PROFESSIONAL</div>
     <div class="brand-sub">Kasir Panel</div>
   </div>
   <nav class="nav">
@@ -957,14 +960,14 @@
     
     <!-- Bagian Kartu ID Card -->
     <div id="id-card-view" style="width: 100%; max-width: 290px; padding: 22px 18px; background: linear-gradient(145deg, #181818, #0e0e0e); border: 1px solid var(--gold); border-radius: 16px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.6); position: relative; margin-bottom: 20px; color: var(--text);">
-      <div style="position: absolute; bottom: 8px; right: 8px; font-size: 90px; opacity: 0.015; pointer-events: none; font-family: sans-serif; line-height: 1;">✂️</div>
+      <div style="position: absolute; bottom: 8px; right: 8px; opacity: 0.04; pointer-events: none; line-height: 1;"><img src="logo-bhc.png" style="width:80px; mix-blend-mode:multiply;"></div>
       <div class="corner tl" style="top: 8px; left: 8px; border-width: 1px 0 0 1px; width: 10px; height: 10px;"></div>
       <div class="corner tr" style="top: 8px; right: 8px; border-width: 1px 1px 0 0; width: 10px; height: 10px;"></div>
       <div class="corner bl" style="bottom: 8px; left: 8px; border-width: 0 0 1px 1px; width: 10px; height: 10px;"></div>
       <div class="corner br" style="bottom: 8px; right: 8px; border-width: 0 1px 1px 0; width: 10px; height: 10px;"></div>
       
-      <span style="font-size: 24px; display: block; margin-bottom: 6px;">✂️</span>
-      <div style="font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 900; color: var(--gold-light); letter-spacing: 1px; text-transform: uppercase;">Barbershop</div>
+      <img src="logo-bhc.png" style="height: 30px; object-fit: contain; mix-blend-mode: multiply; display: block; margin: 0 auto 6px;">
+      <div style="font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 900; color: var(--gold-light); letter-spacing: 1px; text-transform: uppercase;">BHC Professional</div>
       <div style="font-size: 8px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-top: 2px; font-weight: 600;">ID Card Karyawan</div>
       
       <div style="width: 30px; height: 1px; background: var(--gold-border); margin: 10px auto 14px;"></div>
@@ -2322,7 +2325,7 @@ function triggerCardPrint(name, role, empId, qrSrc) {
   
   wrapper.innerHTML = `
     <div class="id-card-print">
-      <div style="font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: #C9A96E !important; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 2px;">Barbershop</div>
+      <div style="font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: #C9A96E !important; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 2px;">BHC Professional</div>
       <div style="font-size: 10px; letter-spacing: 2px; color: #C9A96E !important; text-transform: uppercase; margin-top: 4px; font-weight: 600; margin-bottom: 15px;">Kartu ID Karyawan</div>
       
       <div style="width: 50px; height: 1.5px; background: #C9A96E !important; margin: 15px auto 20px;"></div>
@@ -2846,7 +2849,7 @@ function printRapor() {
       <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #C9A96E; padding-bottom: 12px; margin-bottom: 16px;">
         <div>
           <h1 style="font-family: 'Playfair Display', serif; font-size: 22px; color: #111; margin: 0 0 2px 0;">LAPORAN KEHADIRAN KARYAWAN</h1>
-          <p style="font-size: 12px; color: #666; margin: 0;">Barbershop Attendance & Performance System</p>
+          <p style="font-size: 12px; color: #666; margin: 0;">BHC Professional — Attendance & Performance System</p>
         </div>
         <div style="text-align: right;">
           <div style="font-size: 13px; font-weight: 700; color: #8C6D37;">Periode: ${d.monthLabel}</div>
@@ -2907,7 +2910,7 @@ function printRapor() {
           <div style="font-size: 12px; font-weight: 700; border-top: 1px solid #777; padding-top: 4px;">${escapeHtml(d.empName.split('(')[0].trim())}</div>
         </div>
         <div style="text-align: center; width: 200px;">
-          <div style="font-size: 11px; color: #666; margin-bottom: 50px;">Manajemen / Kasir Barbershop</div>
+          <div style="font-size: 11px; color: #666; margin-bottom: 50px;">Manajemen / Kasir BHC Professional</div>
           <div style="font-size: 12px; font-weight: 700; border-top: 1px solid #777; padding-top: 4px;">( .................................... )</div>
         </div>
       </div>
@@ -2956,7 +2959,7 @@ async function sendDailyRecapWA() {
     ? '\n🔴 *Alpha:*\n' + alphaList.map(r=>`• ${r.employee_name}`).join('\n')
     : '';
 
-  const msg = `✂️ *REKAP HARIAN BARBERSHOP*\n📅 ${dateLabel}\n\n` +
+  const msg = `💈 *REKAP HARIAN BHC PROFESSIONAL*\n📅 ${dateLabel}\n\n` +
     `✅ Hadir: ${hadir.length}/${totalEmp} karyawan\n` +
     `📤 Sudah Pulang: ${keluar.length}\n` +
     `📋 Izin: ${izin.length} · Sakit: ${sakit.length} · Libur: ${libur.length}\n` +
@@ -2980,7 +2983,7 @@ function sendWA(empId, empName, time, status) {
   const typeStr = status === 'keluar' ? 'Absen Keluar 📤' : 'Absen Masuk 📥';
   const timeStr = new Date(time).toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', ...tz });
   const dateStr = new Date(time).toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric', ...tz });
-  const message = `✂️ *${typeStr}*\n\n👤 ${empId} — ${empName}\n🏪 Cabang: ${document.getElementById('scanner-cabang').value}\n📅 ${dateStr}\n🕐 ${timeStr}\n📍 Perangkat Kasir`;
+  const message = `💈 *${typeStr}*\n\n👤 ${empId} — ${empName}\n🏪 Cabang: ${document.getElementById('scanner-cabang').value}\n📅 ${dateStr}\n🕐 ${timeStr}\n📍 Perangkat Kasir`;
   fetch('https://api.fonnte.com/send', {
     method: 'POST',
     headers: { 'Authorization': fonnteToken },
