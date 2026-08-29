@@ -1,0 +1,21 @@
+name: Supabase keep-alive
+
+on:
+  schedule:
+    # 08.15 dan 20.15 WIB (UTC+7)
+    - cron: "15 1,13 * * *"
+  workflow_dispatch:
+
+jobs:
+  ping_database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          curl --fail --silent --show-error --retry 2 \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/cabang?select=id&limit=1"
