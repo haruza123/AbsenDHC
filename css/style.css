@@ -32,7 +32,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .login-header { text-align: center; margin-bottom: 32px; }
 .login-icon { margin-bottom: 10px; display: block; filter: drop-shadow(0 0 10px rgba(201,169,110,0.4)); }
 .logo-img { height: 50px; object-fit: contain; filter: brightness(1.1) contrast(1.1); background: rgba(255,255,255,0.9); border-radius: 8px; padding: 4px 8px; }
-.logo-img-sm { height: 36px; object-fit: contain; filter: brightness(1.1) contrast(1.1); background: rgba(255,255,255,0.9); border-radius: 6px; padding: 3px 6px; }
+.logo-img-sm { height: 36px; object-fit: contain; filter: brightness(1.1) contrast(1.1); border-radius: 6px; padding: 0px 0px; }
 .logo-img-xs { height: 24px; object-fit: contain; filter: brightness(1.1) contrast(1.1); background: rgba(255,255,255,0.9); border-radius: 4px; padding: 2px 5px; vertical-align: middle; }
 .login-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--gold-light); }
 .login-sub { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
