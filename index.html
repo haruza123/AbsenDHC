@@ -112,6 +112,10 @@
       Izin & Sakit
     </a>
     <div class="nav-section">Manajemen</div>
+    <a class="nav-item" data-sec="cabang" onclick="showSection('cabang',this);return false;" href="javascript:void(0)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Kelola Cabang
+    </a>
     <a class="nav-item" data-sec="karyawan" onclick="showSection('karyawan',this);return false;" href="javascript:void(0)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
       Karyawan
@@ -326,6 +330,18 @@
       </div>
     </div>
     <div id="izin-wrap"><div class="loading"><div class="spinner"></div>Memuat...</div></div>
+  </div>
+
+  <!-- KELOLA CABANG -->
+  <div class="section" id="sec-cabang">
+    <div class="page-header">
+      <div><div class="page-title">Kelola Cabang</div><div class="page-sub">Tambah, edit, dan hapus cabang toko</div></div>
+      <div class="header-actions">
+        <button class="btn btn-ghost" onclick="loadCabang()">⟳ Refresh</button>
+        <button class="btn btn-gold" onclick="openModal('cabang')">+ Tambah Cabang</button>
+      </div>
+    </div>
+    <div class="table-card"><div id="cabang-wrap"><div class="loading"><div class="spinner"></div>Memuat...</div></div></div>
   </div>
 
   <!-- KARYAWAN -->
@@ -589,6 +605,47 @@
   </div>
 </div>
 
+<!-- MODAL TAMBAH CABANG -->
+<div class="modal-overlay" id="modal-cabang">
+  <div class="modal">
+    <div class="modal-title">Tambah Cabang Baru</div>
+    <div class="form-group">
+      <label class="field-label">Nama Cabang *</label>
+      <input class="field-input" type="text" id="mc-nama" placeholder="Contoh: Cabang BSD, Cabang Kelapa Gading..." />
+    </div>
+    <div class="form-group">
+      <label class="field-label">Alamat / Keterangan</label>
+      <input class="field-input" type="text" id="mc-alamat" placeholder="Jl. Contoh No. 123 (opsional)" />
+    </div>
+    <div id="mc-status" class="save-msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('cabang')">Batal</button>
+      <button class="btn btn-gold" onclick="submitCabang()">Tambah</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT CABANG -->
+<div class="modal-overlay" id="modal-edit-cabang">
+  <div class="modal">
+    <div class="modal-title">Edit Cabang</div>
+    <input type="hidden" id="mec-id" />
+    <div class="form-group">
+      <label class="field-label">Nama Cabang *</label>
+      <input class="field-input" type="text" id="mec-nama" placeholder="Nama cabang" />
+    </div>
+    <div class="form-group">
+      <label class="field-label">Alamat / Keterangan</label>
+      <input class="field-input" type="text" id="mec-alamat" placeholder="Alamat (opsional)" />
+    </div>
+    <div id="mec-status" class="save-msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('edit-cabang')">Batal</button>
+      <button class="btn btn-gold" onclick="submitEditCabang()">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+
 <!-- PRINT CONTAINERS (Hidden on screen, only visible in print media) -->
 <div id="print-card-wrapper" style="display: none;"></div>
 <div id="print-rapor-wrapper" style="display: none;"></div>
@@ -598,6 +655,7 @@
 <script src="js/config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/settings.js"></script>
+<script src="js/cabang.js"></script>
 <script src="js/scanner.js"></script>
 <script src="js/absensi.js"></script>
 <script src="js/rekap.js"></script>

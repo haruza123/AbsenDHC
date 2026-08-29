@@ -34,10 +34,10 @@ function startApp() {
   if (typeof setupRealtime === 'function') setupRealtime();
 }
 
-// ===== CABANG LIST =====
+// ===== CABANG LIST (dari tabel cabang) =====
 async function loadCabangList() {
-  const { data } = await db.from('employees').select('cabang');
-  const unique = [...new Set((data || []).map(r => r.cabang).filter(Boolean))];
+  const { data } = await db.from('cabang').select('nama').order('nama');
+  const unique = (data || []).map(r => r.nama).filter(Boolean);
   cabangList = unique;
   const selectors = [
     'filter-cabang-absensi', 'filter-cabang-rekap', 'filter-cabang-izin',
@@ -48,19 +48,18 @@ async function loadCabangList() {
     const el = document.getElementById(id);
     if (!el) return;
     const isSelect = el.tagName === 'SELECT';
-    const extra = (id.startsWith('filter') || id === 'scanner-cabang')
+    const isFilter = id.startsWith('filter') || id === 'scanner-cabang';
+    const extra = isFilter
       ? '<option value="">Pilih Cabang...</option>'
-      : '<option value="Pusat">Pusat</option>';
-    
+      : (unique.length > 0 ? '' : '<option value="">— Belum ada cabang —</option>');
+
     if (isSelect) {
       const cur = el.value;
       el.innerHTML = extra + unique.map(c => `<option value="${c}">${c}</option>`).join('');
-      if (cur) {
+      if (cur && unique.includes(cur)) {
         el.value = cur;
-      } else if (unique.length > 0) {
-        if (!id.startsWith('filter')) {
-          el.value = unique[0];
-        }
+      } else if (unique.length > 0 && !isFilter) {
+        el.value = unique[0];
       }
     }
   });
@@ -83,6 +82,7 @@ function showSection(name, el) {
   if (name === 'absensi' && typeof loadAbsensi === 'function') loadAbsensi();
   if (name === 'rekap' && typeof loadRekap === 'function') loadRekap();
   if (name === 'izin' && typeof loadIzinList === 'function') loadIzinList();
+  if (name === 'cabang' && typeof loadCabang === 'function') loadCabang();
   if (name === 'karyawan' && typeof loadKaryawan === 'function') loadKaryawan();
   if (name === 'settings' && typeof loadSettings === 'function') loadSettings();
   if (name === 'rapor' && typeof loadRaporEmpList === 'function') loadRaporEmpList();

@@ -40,6 +40,14 @@ CREATE TABLE IF NOT EXISTS settings (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Cabang (Kelola Cabang / Branch Management)
+CREATE TABLE IF NOT EXISTS cabang (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  nama TEXT UNIQUE NOT NULL,
+  alamat TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Absensi
 CREATE TABLE IF NOT EXISTS attendance (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -67,8 +75,18 @@ Untuk melindungi data dari manipulasi pihak tidak berwenang melalui `anon_key`, 
 ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
 ALTER TABLE attendance ENABLE ROW LEVEL SECURITY;
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cabang ENABLE ROW LEVEL SECURITY;
 
--- 2. Kebijakan untuk Tabel 'employees'
+-- 2. Kebijakan untuk Tabel 'cabang'
+-- Semua boleh membaca data cabang (diperlukan untuk dropdown)
+CREATE POLICY "Allow read cabang for all" ON cabang
+  FOR SELECT USING (true);
+
+-- Hanya Admin terautentikasi yang boleh mengelola cabang
+CREATE POLICY "Allow full access for authenticated admins on cabang" ON cabang
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- 3. Kebijakan untuk Tabel 'employees'
 -- Anon (publik/kamera kasir) & Authenticated (admin) boleh membaca data karyawan
 CREATE POLICY "Allow read employees for all" ON employees
   FOR SELECT USING (true);
@@ -77,7 +95,7 @@ CREATE POLICY "Allow read employees for all" ON employees
 CREATE POLICY "Allow full access for authenticated admins on employees" ON employees
   FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
--- 3. Kebijakan untuk Tabel 'attendance'
+-- 4. Kebijakan untuk Tabel 'attendance'
 -- Anon & Authenticated boleh melihat dan mencatat absensi (insert/scan kasir)
 CREATE POLICY "Allow read attendance for all" ON attendance
   FOR SELECT USING (true);
@@ -92,7 +110,7 @@ CREATE POLICY "Allow update and delete attendance for authenticated only" ON att
 CREATE POLICY "Allow delete attendance for authenticated only" ON attendance
   FOR DELETE TO authenticated USING (true);
 
--- 4. Kebijakan untuk Tabel 'settings'
+-- 5. Kebijakan untuk Tabel 'settings'
 -- Boleh dibaca oleh aplikasi untuk membaca jam kerja & status WA
 CREATE POLICY "Allow read settings for all" ON settings
   FOR SELECT USING (true);
