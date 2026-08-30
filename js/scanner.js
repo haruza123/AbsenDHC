@@ -382,13 +382,24 @@ async function processAbsenScanner(empId) {
     }
     
     let lateMinutes = 0;
-    if (absenType === 'hadir' && jamMasuk) {
-      const now = new Date();
-      const [h, m] = jamMasuk.split(':').map(Number);
-      const cutoff = new Date(now);
-      cutoff.setHours(h, m + toleransiMenit, 0, 0);
-      if (now > cutoff) {
-        lateMinutes = Math.round((now - cutoff) / 60000);
+    if (absenType === 'hadir') {
+      let roleJam = jamMasuk;
+      let roleTol = toleransiMenit;
+      if (typeof getJadwalForRole === 'function' && emp.role) {
+        const jadwal = getJadwalForRole(emp.role);
+        if (jadwal) {
+          roleJam = jadwal.jam_masuk;
+          roleTol = jadwal.toleransi_menit;
+        }
+      }
+      if (roleJam) {
+        const now = new Date();
+        const [h, m] = roleJam.split(':').map(Number);
+        const cutoff = new Date(now);
+        cutoff.setHours(h, m + roleTol, 0, 0);
+        if (now > cutoff) {
+          lateMinutes = Math.round((now - cutoff) / 60000);
+        }
       }
     }
 

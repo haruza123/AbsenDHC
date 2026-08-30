@@ -116,6 +116,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       Kelola Cabang
     </a>
+    <a class="nav-item" data-sec="jadwal" onclick="showSection('jadwal',this);return false;" href="javascript:void(0)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Jadwal Role
+    </a>
     <a class="nav-item" data-sec="karyawan" onclick="showSection('karyawan',this);return false;" href="javascript:void(0)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
       Karyawan
@@ -344,6 +348,18 @@
     <div class="table-card"><div id="cabang-wrap"><div class="loading"><div class="spinner"></div>Memuat...</div></div></div>
   </div>
 
+  <!-- JADWAL ROLE -->
+  <div class="section" id="sec-jadwal">
+    <div class="page-header">
+      <div><div class="page-title">Jadwal per Role</div><div class="page-sub">Atur jam masuk & toleransi terlambat berbeda untuk setiap jabatan</div></div>
+      <div class="header-actions">
+        <button class="btn btn-ghost" onclick="loadJadwal()">⟳ Refresh</button>
+        <button class="btn btn-gold" onclick="openModal('jadwal')">+ Tambah Jadwal</button>
+      </div>
+    </div>
+    <div class="table-card"><div id="jadwal-wrap"><div class="loading"><div class="spinner"></div>Memuat...</div></div></div>
+  </div>
+
   <!-- KARYAWAN -->
   <div class="section" id="sec-karyawan">
     <div class="page-header">
@@ -374,7 +390,7 @@
           <input class="field-input" type="number" id="set-toleransi" placeholder="0" min="0" max="60" value="0" />
         </div>
       </div>
-      <p style="font-size:11px; color:var(--muted); margin-top:6px; line-height:1.6;">Jika karyawan scan masuk setelah jam ini (+ toleransi), otomatis dicatat sebagai Terlambat beserta jumlah menitnya.</p>
+      <p style="font-size:11px; color:var(--muted); margin-top:6px; line-height:1.6;">Jam kerja default untuk semua karyawan. Jika role/jabatan memiliki jadwal khusus (diatur di menu <b>Jadwal Role</b>), jadwal khusus tersebut yang dipakai.</p>
       <button class="btn btn-gold" onclick="saveSettings()">Simpan Jam Kerja</button>
       <div class="save-msg" id="save-msg-jam"></div>
     </div>
@@ -516,7 +532,7 @@
       <div class="form-group"><label class="field-label">Nama *</label><input class="field-input" type="text" id="mk-name" placeholder="Nama karyawan" /></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="field-label">Jabatan</label><input class="field-input" type="text" id="mk-role" placeholder="Barber, Kasir..." /></div>
+      <div class="form-group"><label class="field-label">Jabatan</label><select class="field-input" id="mk-role"><option value="">Pilih Jabatan...</option></select></div>
       <div class="form-group"><label class="field-label">Cabang</label><select class="field-input" id="mk-cabang"><option value="Pusat">Pusat</option></select></div>
     </div>
     <div class="form-group"><label class="field-label">No. HP / Email</label><input class="field-input" type="text" id="mk-contact" placeholder="08xx / email@..." /></div>
@@ -546,7 +562,7 @@
     <div class="form-row">
       <div class="form-group">
         <label class="field-label">Jabatan</label>
-        <input class="field-input" type="text" id="mek-role" placeholder="Barber, Kasir..." />
+        <select class="field-input" id="mek-role"><option value="">Pilih Jabatan...</option></select>
       </div>
       <div class="form-group">
         <label class="field-label">Cabang</label>
@@ -646,6 +662,59 @@
   </div>
 </div>
 
+<!-- MODAL: TAMBAH JADWAL ROLE -->
+<div class="modal-overlay" id="modal-jadwal">
+  <div class="modal">
+    <div class="modal-title">Tambah Jadwal Role</div>
+    <div class="form-group">
+      <label class="field-label">Nama Role / Jabatan *</label>
+      <input class="field-input" type="text" id="mj-nama" placeholder="contoh: Kasir, Barber, Manager" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="field-label">Jam Masuk *</label>
+        <input class="field-input" type="time" id="mj-jam" value="09:00" />
+      </div>
+      <div class="form-group">
+        <label class="field-label">Toleransi (menit)</label>
+        <input class="field-input" type="number" id="mj-toleransi" placeholder="0" min="0" max="120" value="0" />
+      </div>
+    </div>
+    <div id="mj-status" class="save-msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('jadwal')">Batal</button>
+      <button class="btn btn-gold" onclick="submitJadwal()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT JADWAL ROLE -->
+<div class="modal-overlay" id="modal-edit-jadwal">
+  <div class="modal">
+    <div class="modal-title">Edit Jadwal Role</div>
+    <input type="hidden" id="mej-id" />
+    <div class="form-group">
+      <label class="field-label">Nama Role / Jabatan *</label>
+      <input class="field-input" type="text" id="mej-nama" placeholder="Nama role" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="field-label">Jam Masuk *</label>
+        <input class="field-input" type="time" id="mej-jam" value="09:00" />
+      </div>
+      <div class="form-group">
+        <label class="field-label">Toleransi (menit)</label>
+        <input class="field-input" type="number" id="mej-toleransi" placeholder="0" min="0" max="120" value="0" />
+      </div>
+    </div>
+    <div id="mej-status" class="save-msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('edit-jadwal')">Batal</button>
+      <button class="btn btn-gold" onclick="submitEditJadwal()">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+
 <!-- PRINT CONTAINERS (Hidden on screen, only visible in print media) -->
 <div id="print-card-wrapper" style="display: none;"></div>
 <div id="print-rapor-wrapper" style="display: none;"></div>
@@ -656,6 +725,7 @@
 <script src="js/auth.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/cabang.js"></script>
+<script src="js/jadwal.js"></script>
 <script src="js/scanner.js"></script>
 <script src="js/absensi.js"></script>
 <script src="js/rekap.js"></script>

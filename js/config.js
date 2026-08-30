@@ -1,9 +1,9 @@
 // ============================================================
 // KONFIGURASI SUPABASE & VARIABEL GLOBAL
 // ============================================================
-const DEFAULT_SUPABASE_URL = "https://eambncbpjrnpsfjiclio.supabase.co";
+const DEFAULT_SUPABASE_URL = "https://xyqsueykuijjrqqbusmg.supabase.co";
 const DEFAULT_SUPABASE_ANON_KEY =
-  "sb_publishable_KKRDBlwHNkglQRc1eQ2O7g_ImiyZZME";
+  "sb_publishable_z_5mjpEzHQBgonB5hC4_6A_WF_vj4wK";
 
 const SUPABASE_URL = localStorage.getItem("sb_url") || DEFAULT_SUPABASE_URL;
 const SUPABASE_ANON_KEY =

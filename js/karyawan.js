@@ -179,10 +179,12 @@ async function editKaryawan(empId) {
     document.getElementById('mek-db-id').value = emp.id;
     document.getElementById('mek-id').value = emp.employee_id;
     document.getElementById('mek-name').value = emp.name || '';
-    document.getElementById('mek-role').value = emp.role || '';
     document.getElementById('mek-contact').value = emp.email || '';
     document.getElementById('mek-cabang').value = emp.cabang || 'Pusat';
-    
+
+    if (typeof loadRoleList === 'function') await loadRoleList();
+    document.getElementById('mek-role').value = emp.role || '';
+
     openModal('edit-karyawan');
   } catch (err) {
     alert('Terjadi kesalahan: ' + err.message);

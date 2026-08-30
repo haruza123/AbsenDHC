@@ -24,6 +24,8 @@ function startApp() {
   loadCabangList().then(() => {
     if (typeof loadBelumAbsen === 'function') loadBelumAbsen();
   });
+  if (typeof loadJadwalRoleCache === 'function') loadJadwalRoleCache();
+  loadRoleList();
 
   const scannerNavItem = document.querySelector('.nav-item[data-sec="scanner"]');
   showSection('scanner', scannerNavItem);
@@ -65,6 +67,26 @@ async function loadCabangList() {
   });
 }
 
+// ===== ROLE LIST (dari tabel jadwal_role) =====
+async function loadRoleList() {
+  const { data } = await db.from('jadwal_role').select('nama_role').order('nama_role');
+  const roles = (data || []).map(r => r.nama_role).filter(Boolean);
+  const selectors = ['mk-role', 'mek-role'];
+
+  selectors.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el || el.tagName !== 'SELECT') return;
+    const cur = el.value;
+    const empty = roles.length > 0
+      ? '<option value="">Pilih Jabatan...</option>'
+      : '<option value="">— Tambah role di Jadwal Role —</option>';
+    el.innerHTML = empty + roles.map(r => `<option value="${r}">${r}</option>`).join('');
+    if (cur && roles.some(r => r.toLowerCase() === cur.toLowerCase())) {
+      el.value = roles.find(r => r.toLowerCase() === cur.toLowerCase());
+    }
+  });
+}
+
 // ===== NAVIGASI TAB =====
 function showSection(name, el) {
   // Matikan kamera jika navigasi keluar dari Scanner Kasir
@@ -83,6 +105,7 @@ function showSection(name, el) {
   if (name === 'rekap' && typeof loadRekap === 'function') loadRekap();
   if (name === 'izin' && typeof loadIzinList === 'function') loadIzinList();
   if (name === 'cabang' && typeof loadCabang === 'function') loadCabang();
+  if (name === 'jadwal' && typeof loadJadwal === 'function') loadJadwal();
   if (name === 'karyawan' && typeof loadKaryawan === 'function') loadKaryawan();
   if (name === 'settings' && typeof loadSettings === 'function') loadSettings();
   if (name === 'rapor' && typeof loadRaporEmpList === 'function') loadRaporEmpList();
