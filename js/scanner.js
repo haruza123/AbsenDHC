@@ -2,6 +2,7 @@
 // MODUL SCANNER KASIR & LIVE STATUS KEHADIRAN
 // ============================================================
 let scannerTransitioning = false;
+let pendingKeluarData = null;
 
 async function toggleScanner() {
   if (scannerTransitioning) return;
@@ -193,7 +194,7 @@ function showScanError(msg) {
   setTimeout(resetScannerResultView, 5000);
 }
 
-function showScanSuccess(empId, name, role, cabang, status, time, lateMinutes = 0) {
+function showScanSuccess(empId, name, role, cabang, status, time, lateMinutes = 0, durasi = null) {
   document.getElementById('scan-result-empty').style.display = 'none';
   document.getElementById('scan-result-error').style.display = 'none';
   const card = document.getElementById('scan-result-card');
@@ -236,8 +237,19 @@ function showScanSuccess(empId, name, role, cabang, status, time, lateMinutes = 
     avatar.style.borderColor = 'var(--blue)';
     avatar.style.color = '#7ec8e3';
     glowClass = 'blue-glow';
-    toastMsg = `📤 <b>${name}</b> keluar`;
+    toastMsg = `📤 <b>${name}</b> keluar` + (durasi ? ` (${durasi})` : '');
     toastType = 'blue';
+  }
+
+  const durasiRow = document.getElementById('scan-result-durasi-row');
+  const durasiEl = document.getElementById('scan-result-durasi');
+  if (durasiRow && durasiEl) {
+    if (status === 'keluar' && durasi) {
+      durasiEl.textContent = durasi;
+      durasiRow.style.display = 'block';
+    } else {
+      durasiRow.style.display = 'none';
+    }
   }
 
   const flash = document.getElementById('scanner-flash');
@@ -368,9 +380,10 @@ async function processAbsenScanner(empId) {
     
     const hasCheckedIn = todayRecords ? todayRecords.some(r => r.status === 'hadir') : false;
     const hasCheckedOut = todayRecords ? todayRecords.some(r => r.status === 'keluar') : false;
-    
+    const checkinRecord = todayRecords ? todayRecords.find(r => r.status === 'hadir') : null;
+
     let absenType = 'hadir';
-    
+
     if (hasCheckedIn) {
       if (hasCheckedOut) {
         showScanError(`⚠ Karyawan ${emp.name} sudah absen masuk & keluar hari ini.`);
@@ -380,7 +393,7 @@ async function processAbsenScanner(empId) {
         absenType = 'keluar';
       }
     }
-    
+
     let lateMinutes = 0;
     if (absenType === 'hadir') {
       let roleJam = jamMasuk;
@@ -403,39 +416,90 @@ async function processAbsenScanner(empId) {
       }
     }
 
-    const notesStr = absenType === 'keluar'
-      ? 'Scan Keluar Kasir'
-      : lateMinutes > 0
-        ? `Scan Masuk Kasir | Terlambat ${lateMinutes} mnt`
-        : 'Scan Masuk Kasir';
+    if (absenType === 'keluar') {
+      const jamMasukTime = checkinRecord ? new Date(checkinRecord.created_at) : null;
+      const durasiStr = jamMasukTime ? formatDurasiKerja(jamMasukTime, new Date()) : null;
+      const jamMasukStr = jamMasukTime
+        ? jamMasukTime.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', ...tz })
+        : '--:--';
 
-    const submitTime = new Date().toISOString();
-    const payload = {
-      employee_id: empId,
-      employee_name: emp.name,
-      cabang: selectedCabang,
-      status: absenType,
-      notes: notesStr
-    };
-    
-    const { error: insertErr } = await db.from('attendance').insert(payload);
-    if (insertErr) throw insertErr;
-    
-    playAudioTone(true);
-    showScanSuccess(empId, emp.name, emp.role || 'Barber', selectedCabang, absenType, submitTime, lateMinutes);
-    
-    if (waEnabled && fonnteToken && waTarget && typeof sendWA === 'function') {
-      sendWA(empId, emp.name, submitTime, absenType);
+      pendingKeluarData = { empId, emp, selectedCabang, checkinTime: jamMasukTime };
+
+      document.getElementById('confirm-keluar-name').textContent = emp.name;
+      document.getElementById('confirm-keluar-id').textContent = empId;
+      document.getElementById('confirm-keluar-jam-masuk').textContent = jamMasukStr;
+      document.getElementById('confirm-keluar-durasi').textContent = durasiStr || '--:--';
+      openModal('confirm-keluar');
+      return;
     }
-    
-    if (typeof loadAbsensi === 'function') loadAbsensi();
-    if (typeof loadChartLine === 'function') loadChartLine();
-    loadBelumAbsen();
+
+    await submitAbsen(empId, emp, selectedCabang, absenType, lateMinutes, null);
     
   } catch (err) {
     showScanError('✗ Gagal mencatat absensi: ' + (err.message || err));
     playAudioTone(false);
   }
+}
+
+async function submitAbsen(empId, emp, selectedCabang, absenType, lateMinutes, checkinTime) {
+  const notesStr = absenType === 'keluar'
+    ? 'Scan Keluar Kasir' + (checkinTime ? ` | Durasi ${formatDurasiKerja(checkinTime, new Date())}` : '')
+    : lateMinutes > 0
+      ? `Scan Masuk Kasir | Terlambat ${lateMinutes} mnt`
+      : 'Scan Masuk Kasir';
+
+  const submitTime = new Date().toISOString();
+  const payload = {
+    employee_id: empId,
+    employee_name: emp.name,
+    cabang: selectedCabang,
+    status: absenType,
+    notes: notesStr
+  };
+
+  const { error: insertErr } = await db.from('attendance').insert(payload);
+  if (insertErr) throw insertErr;
+
+  playAudioTone(true);
+  const durasi = (absenType === 'keluar' && checkinTime) ? formatDurasiKerja(checkinTime, new Date()) : null;
+  showScanSuccess(empId, emp.name, emp.role || 'Barber', selectedCabang, absenType, submitTime, lateMinutes, durasi);
+
+  if (waEnabled && fonnteToken && waTarget && typeof sendWA === 'function') {
+    sendWA(empId, emp.name, submitTime, absenType);
+  }
+
+  if (typeof loadAbsensi === 'function') loadAbsensi();
+  if (typeof loadChartLine === 'function') loadChartLine();
+  loadBelumAbsen();
+}
+
+function formatDurasiKerja(start, end) {
+  const diffMs = end - start;
+  const totalMenit = Math.round(diffMs / 60000);
+  const jam = Math.floor(totalMenit / 60);
+  const menit = totalMenit % 60;
+  if (jam === 0) return `${menit} mnt`;
+  if (menit === 0) return `${jam} jam`;
+  return `${jam} jam ${menit} mnt`;
+}
+
+async function proceedKeluarConfirm() {
+  if (!pendingKeluarData) return;
+  const { empId, emp, selectedCabang, checkinTime } = pendingKeluarData;
+  pendingKeluarData = null;
+  closeModal('confirm-keluar');
+
+  try {
+    await submitAbsen(empId, emp, selectedCabang, 'keluar', 0, checkinTime);
+  } catch (err) {
+    showScanError('✗ Gagal mencatat absen keluar: ' + (err.message || err));
+    playAudioTone(false);
+  }
+}
+
+function cancelKeluarConfirm() {
+  pendingKeluarData = null;
+  closeModal('confirm-keluar');
 }
 
 // ===== PANEL BELUM ABSEN =====

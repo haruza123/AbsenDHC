@@ -73,10 +73,16 @@ function renderTable() {
     return; 
   }
   
+  const checkinMap = {};
+  allRows.forEach(r => {
+    if (r.status === 'hadir') checkinMap[r.employee_id] = r.created_at;
+  });
+
   const tbody = rows.map(r => {
     const time = new Date(r.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', ...tz });
     let bc = 'b-yellow';
     let bl = 'Izin';
+    let durasi = '';
     if (r.status === 'hadir') {
       const lateMatch = r.notes && r.notes.match(/Terlambat (\d+) mnt/);
       if (lateMatch) {
@@ -85,23 +91,40 @@ function renderTable() {
         bc = 'b-green'; bl = '✓ Masuk';
       }
     }
-    else if (r.status === 'keluar') { bc = 'b-blue'; bl = '📤 Keluar'; }
+    else if (r.status === 'keluar') {
+      bc = 'b-blue'; bl = '📤 Keluar';
+      const masukTime = checkinMap[r.employee_id];
+      if (masukTime) {
+        const diffMs = new Date(r.created_at) - new Date(masukTime);
+        const totalMenit = Math.round(diffMs / 60000);
+        const jam = Math.floor(totalMenit / 60);
+        const mnt = totalMenit % 60;
+        if (jam === 0) durasi = `${mnt} mnt`;
+        else if (mnt === 0) durasi = `${jam} jam`;
+        else durasi = `${jam}j ${mnt}m`;
+      }
+    }
     else if (r.status === 'alpha') { bc = 'b-red'; bl = 'Alpha'; }
     else if (r.status === 'sakit') { bc = 'b-blue'; bl = 'Sakit'; }
     else if (r.status === 'libur') { bc = 'b-gold'; bl = '🏖 Libur'; }
-    
+
+    const durasiHtml = durasi
+      ? `<span class="badge b-gold" style="font-size:11px;">${durasi}</span>`
+      : '<span style="color:var(--muted);font-size:11px;">—</span>';
+
     return `<tr>
       <td><span class="id-chip">${escapeHtml(r.employee_id || '—')}</span></td>
       <td>${escapeHtml(r.employee_name || '—')}</td>
       <td><span class="badge b-gold">${escapeHtml(r.cabang || '—')}</span></td>
       <td>${time}</td>
       <td><span class="badge ${bc}">${bl}</span></td>
+      <td>${durasiHtml}</td>
       <td><span style="color: var(--muted); font-size:12px">${escapeHtml(r.notes || '—')}</span></td>
       <td><button class="btn btn-danger" onclick="deleteRow('${escapeHtml(r.id)}')">Hapus</button></td>
     </tr>`;
   }).join('');
-  
-  wrap.innerHTML = `<table><thead><tr><th>ID</th><th>Nama</th><th>Cabang</th><th>Waktu</th><th>Status</th><th>Notes</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;
+
+  wrap.innerHTML = `<table><thead><tr><th>ID</th><th>Nama</th><th>Cabang</th><th>Waktu</th><th>Status</th><th>Durasi</th><th>Notes</th><th></th></tr></thead><tbody>${tbody}</tbody></table>`;
   
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const pageInfo = document.getElementById('page-info');

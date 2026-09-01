@@ -21,7 +21,7 @@ async function loadRekap() {
   
   const { data } = await q;
   const empMap = {};
-  
+
   (data || []).forEach(r => {
     const id = r.employee_id;
     if (!empMap[id]) {
@@ -30,7 +30,8 @@ async function loadRekap() {
         name: r.employee_name || '—',
         cabang: r.cabang || '—',
         hadir: 0, keluar: 0, izin: 0, sakit: 0, libur: 0, alpha: 0,
-        terlambat: 0, total_mnt_telat: 0
+        terlambat: 0, total_mnt_telat: 0,
+        total_mnt_kerja: 0
       };
     }
     if (empMap[id][r.status] !== undefined) empMap[id][r.status]++;
@@ -40,6 +41,20 @@ async function loadRekap() {
         empMap[id].terlambat++;
         empMap[id].total_mnt_telat += parseInt(m[1]);
       }
+    }
+  });
+
+  const sortedData = (data || []).slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  const dailyCheckin = {};
+  sortedData.forEach(r => {
+    const id = r.employee_id;
+    const day = new Date(r.created_at).toLocaleDateString('en-CA', tz);
+    const key = id + '|' + day;
+    if (r.status === 'hadir') {
+      dailyCheckin[key] = new Date(r.created_at);
+    } else if (r.status === 'keluar' && dailyCheckin[key]) {
+      const diffMs = new Date(r.created_at) - dailyCheckin[key];
+      if (empMap[id]) empMap[id].total_mnt_kerja += Math.round(diffMs / 60000);
     }
   });
   
@@ -64,6 +79,7 @@ async function loadRekap() {
     <td><span class="badge b-gold">${e.libur}</span></td>
     <td><span class="badge b-red">${e.alpha}</span></td>
     <td style="font-weight:600;color:var(--gold)">${e.hadir} Hari</td>
+    <td style="font-weight:600;color:var(--blue-light, #7ec8e3)">${formatMenitKeJam(e.total_mnt_kerja)}</td>
   </tr>`).join('');
 
   wrap.innerHTML = `<div class="table-card">
@@ -72,7 +88,7 @@ async function loadRekap() {
         <tr>
           <th>ID</th><th>Nama</th><th>Cabang</th>
           <th>Hadir</th><th>Terlambat</th><th>Izin</th>
-          <th>Sakit</th><th>Libur</th><th>Alpha</th><th>Total Hadir</th>
+          <th>Sakit</th><th>Libur</th><th>Alpha</th><th>Total Hadir</th><th>Jam Kerja</th>
         </tr>
       </thead>
       <tbody>${tbody}</tbody>
@@ -101,7 +117,7 @@ function exportExcel() {
   const monthLabel = month ? new Date(month + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '—';
   const downloadDate = new Date().toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short', ...tz });
 
-  let totalHadir = 0, totalTelat = 0, totalMntTelat = 0, totalKeluar = 0, totalIzin = 0, totalSakit = 0, totalLibur = 0, totalAlpha = 0;
+  let totalHadir = 0, totalTelat = 0, totalMntTelat = 0, totalKeluar = 0, totalIzin = 0, totalSakit = 0, totalLibur = 0, totalAlpha = 0, totalMntKerja = 0;
 
   const rowsHtml = emps.map((e, idx) => {
     totalHadir += (e.hadir || 0);
@@ -112,6 +128,7 @@ function exportExcel() {
     totalSakit += (e.sakit || 0);
     totalLibur += (e.libur || 0);
     totalAlpha += (e.alpha || 0);
+    totalMntKerja += (e.total_mnt_kerja || 0);
 
     const bg = idx % 2 === 0 ? '#ffffff' : '#fcfaf6';
     return `
@@ -129,6 +146,7 @@ function exportExcel() {
         <td style="border: 1px solid #cccccc; text-align: right; padding: 6px;">${e.libur || 0}</td>
         <td style="border: 1px solid #cccccc; text-align: right; padding: 6px; ${e.alpha > 0 ? 'color: #c0392b; font-weight: bold;' : ''}">${e.alpha || 0}</td>
         <td style="border: 1px solid #cccccc; text-align: right; font-weight: bold; background-color: #f7f1e5; padding: 6px;">${e.hadir || 0}</td>
+        <td style="border: 1px solid #cccccc; text-align: right; padding: 6px; color: #2980b9; font-weight: bold;">${formatMenitKeJam(e.total_mnt_kerja)}</td>
       </tr>
     `;
   }).join('');
@@ -161,16 +179,16 @@ function exportExcel() {
     <body>
       <table>
         <tr>
-          <td colspan="13" style="font-size: 16pt; font-weight: bold; color: #8C6D37; text-align: center; height: 35px;">
+          <td colspan="14" style="font-size: 16pt; font-weight: bold; color: #8C6D37; text-align: center; height: 35px;">
             REKAPITULASI ABSENSI KARYAWAN — BHC PROFESSIONAL
           </td>
         </tr>
         <tr>
-          <td colspan="13" style="font-size: 11pt; text-align: center; color: #555555; height: 22px;">
+          <td colspan="14" style="font-size: 11pt; text-align: center; color: #555555; height: 22px;">
             Periode: <b>${monthLabel}</b> | Cabang: <b>${escapeHtml(cabang)}</b> | Diunduh: ${downloadDate}
           </td>
         </tr>
-        <tr><td colspan="13" style="height: 10px;"></td></tr>
+        <tr><td colspan="14" style="height: 10px;"></td></tr>
         <thead>
           <tr>
             <th style="width: 40px;">No</th>
@@ -186,6 +204,7 @@ function exportExcel() {
             <th style="width: 70px;">Libur</th>
             <th style="width: 70px;">Alpha</th>
             <th style="width: 100px;">Total Hari Hadir</th>
+            <th style="width: 100px;">Jam Kerja</th>
           </tr>
         </thead>
         <tbody>
@@ -201,6 +220,7 @@ function exportExcel() {
             <td style="border: 1px solid #997A44; text-align: right; padding: 8px;">${totalLibur}</td>
             <td style="border: 1px solid #997A44; text-align: right; padding: 8px;">${totalAlpha}</td>
             <td style="border: 1px solid #997A44; text-align: right; padding: 8px; background-color: #DFD3BE;">${totalHadir}</td>
+            <td style="border: 1px solid #997A44; text-align: right; padding: 8px; color: #2980b9;">${formatMenitKeJam(totalMntKerja)}</td>
           </tr>
         </tbody>
       </table>
@@ -236,6 +256,7 @@ function printRekap() {
   const totalLibur = emps.reduce((s, e) => s + (e.libur || 0), 0);
   const totalAlpha = emps.reduce((s, e) => s + e.alpha, 0);
   const totalMntTelat = emps.reduce((s, e) => s + e.total_mnt_telat, 0);
+  const totalMntKerjaPrint = emps.reduce((s, e) => s + (e.total_mnt_kerja || 0), 0);
 
   const rows = emps.map((e, i) => `<tr>
     <td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:center;font-size:12px;">${i + 1}</td>
@@ -249,6 +270,7 @@ function printRekap() {
     <td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:center;font-size:12px;">${e.libur || 0}</td>
     <td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:center;font-size:12px;color:#c0392b;font-weight:600;">${e.alpha}</td>
     <td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:center;font-size:13px;font-weight:700;color:#C9A96E;">${e.hadir} Hari</td>
+    <td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:center;font-size:12px;font-weight:600;color:#2980b9;">${formatMenitKeJam(e.total_mnt_kerja)}</td>
   </tr>`).join('');
 
   const maxHadir = Math.max(...emps.map(e => e.hadir), 1);
@@ -321,6 +343,7 @@ function printRekap() {
             <th style="padding:10px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;border-bottom:2px solid #C9A96E;text-align:center;">Libur</th>
             <th style="padding:10px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#c0392b;border-bottom:2px solid #C9A96E;text-align:center;">Alpha</th>
             <th style="padding:10px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#C9A96E;border-bottom:2px solid #C9A96E;text-align:center;">Total</th>
+            <th style="padding:10px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#2980b9;border-bottom:2px solid #C9A96E;text-align:center;">Jam Kerja</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -334,6 +357,7 @@ function printRekap() {
             <td style="padding:10px;text-align:center;font-size:12px;border-top:2px solid #C9A96E;">${totalLibur}</td>
             <td style="padding:10px;text-align:center;font-size:12px;color:#c0392b;border-top:2px solid #C9A96E;">${totalAlpha}</td>
             <td style="padding:10px;text-align:center;font-size:13px;color:#C9A96E;border-top:2px solid #C9A96E;">${totalHadir}</td>
+            <td style="padding:10px;text-align:center;font-size:12px;color:#2980b9;font-weight:700;border-top:2px solid #C9A96E;">${formatMenitKeJam(totalMntKerjaPrint)}</td>
           </tr>
         </tfoot>
       </table>

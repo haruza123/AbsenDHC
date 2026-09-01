@@ -240,6 +240,9 @@
               <div><span style="color: var(--muted);">Waktu:</span> <strong id="scan-result-time" style="color: var(--text);">08:32:15</strong></div>
               <div><span style="color: var(--muted);">Cabang:</span> <strong id="scan-result-cabang" style="color: var(--text);">Pusat</strong></div>
             </div>
+            <div id="scan-result-durasi-row" style="display: none; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; margin-top: 10px; font-size: 12px;">
+              <span style="color: var(--muted);">Total Jam Kerja:</span> <strong id="scan-result-durasi" style="color: var(--gold-light);">—</strong>
+            </div>
           </div>
           
           <!-- Alert Msg (error/warning) (hidden by default) -->
@@ -473,6 +476,27 @@
   </div>
 
 </main>
+
+<!-- MODAL KONFIRMASI ABSEN KELUAR -->
+<div class="modal-overlay" id="modal-confirm-keluar">
+  <div class="modal" style="max-width: 380px; text-align: center;">
+    <div style="font-size: 40px; margin-bottom: 12px;">📤</div>
+    <div class="modal-title" style="text-align: center;">Konfirmasi Absen Pulang</div>
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 6px;">Karyawan berikut akan dicatat <strong style="color: var(--blue-light, #7ec8e3);">pulang</strong>:</p>
+    <div style="background: var(--surface2); border: 1px solid var(--gold-border); border-radius: 10px; padding: 14px; margin: 12px 0;">
+      <div id="confirm-keluar-name" style="font-family: 'Playfair Display', serif; font-size: 16px; color: var(--gold-light); font-weight: 700;">—</div>
+      <div id="confirm-keluar-id" style="font-family: monospace; font-size: 12px; color: var(--muted); margin-top: 4px;">—</div>
+      <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">
+        Masuk: <strong id="confirm-keluar-jam-masuk" style="color: var(--green);">--:--</strong>
+        &nbsp;|&nbsp; Durasi kerja: <strong id="confirm-keluar-durasi" style="color: var(--gold-light);">--:--</strong>
+      </div>
+    </div>
+    <div class="modal-actions" style="justify-content: center; gap: 12px;">
+      <button class="btn btn-ghost" onclick="cancelKeluarConfirm()">Batal</button>
+      <button class="btn btn-gold" id="btn-confirm-keluar" onclick="proceedKeluarConfirm()">Ya, Absen Pulang</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL IZIN -->
 <div class="modal-overlay" id="modal-izin">
