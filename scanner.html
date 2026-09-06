@@ -19,6 +19,9 @@
   <!-- Modular Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
 
+  <!-- Theme Handler (Light/Dark mode) -->
+  <script src="js/theme.js"></script>
+
   <style>
     /* Kiosk-specific layout styles */
     .kiosk-body {
@@ -117,6 +120,12 @@
     <select id="scanner-cabang" class="field-input" style="width: 180px; background: var(--surface2); border-color: var(--gold-border); font-size: 12px;">
       <option value="">Pilih Cabang...</option>
     </select>
+
+    <!-- Tombol Mode Terang / Gelap -->
+    <button class="theme-toggle-btn" onclick="toggleTheme()" title="Ganti Mode Terang/Gelap" aria-label="Ganti Mode Terang/Gelap">
+      <span class="theme-icon"></span>
+      <span class="theme-text" style="display: none;">Mode Terang</span>
+    </button>
 
     <!-- Tombol Masuk Admin -->
     <a href="index.html" class="admin-link" title="Buka Dashboard Admin Penuh">

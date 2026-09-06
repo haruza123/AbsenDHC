@@ -254,6 +254,12 @@ async function loadChartLine() {
   const values = Object.values(grouped);
   const ctx = chartEl.getContext('2d');
   
+  const isLight = document.documentElement.classList.contains('light-theme');
+  const tickColor = isLight ? '#475569' : '#8a8580';
+  const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.04)';
+  const lineColor = isLight ? '#9E7938' : '#C9A96E';
+  const fillBg = isLight ? 'rgba(158,121,56,0.1)' : 'rgba(201,169,110,0.08)';
+
   if (lineChart) lineChart.destroy();
   lineChart = new Chart(ctx, {
     type: 'line',
@@ -261,13 +267,13 @@ async function loadChartLine() {
       labels,
       datasets: [{
         data: values,
-        borderColor: '#C9A96E',
-        backgroundColor: 'rgba(201,169,110,0.08)',
+        borderColor: lineColor,
+        backgroundColor: fillBg,
         borderWidth: 2,
         pointRadius: 3,
         fill: true,
         tension: 0.4,
-        pointBackgroundColor: '#C9A96E'
+        pointBackgroundColor: lineColor
       }]
     },
     options: {
@@ -275,8 +281,8 @@ async function loadChartLine() {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: '#6b6560', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } },
-        y: { ticks: { color: '#6b6560', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' }, beginAtZero: true }
+        x: { ticks: { color: tickColor, font: { size: 11 } }, grid: { color: gridColor } },
+        y: { ticks: { color: tickColor, font: { size: 11 } }, grid: { color: gridColor }, beginAtZero: true }
       }
     }
   });
@@ -285,6 +291,10 @@ async function loadChartLine() {
 function updateDoughnut(hadir, keluar, izin) {
   const chartEl = document.getElementById('chartDoughnut');
   if (!chartEl) return;
+
+  const isLight = document.documentElement.classList.contains('light-theme');
+  const legendColor = isLight ? '#334155' : '#8a8580';
+  const emptyColor = isLight ? '#e2e8f0' : '#1e1e1e';
 
   const totalVal = hadir + keluar + izin;
   const noData = totalVal === 0;
@@ -297,7 +307,7 @@ function updateDoughnut(hadir, keluar, izin) {
       labels: ['Hadir/Masuk', 'Keluar/Pulang', 'Izin/Lainnya'],
       datasets: [{
         data: noData ? [1] : [hadir, keluar, izin],
-        backgroundColor: noData ? ['#1e1e1e'] : ['#27ae60', '#2980b9', '#d4ac0d'],
+        backgroundColor: noData ? [emptyColor] : ['#27ae60', '#2980b9', '#d4ac0d'],
         borderWidth: 0,
         hoverOffset: 6
       }]
@@ -306,7 +316,7 @@ function updateDoughnut(hadir, keluar, izin) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'bottom', labels: { color: '#7a7470', font: { size: 11 }, padding: 14 } },
+        legend: { position: 'bottom', labels: { color: legendColor, font: { size: 12 }, padding: 14 } },
         tooltip: { enabled: !noData }
       },
       cutout: '70%'

@@ -20,6 +20,9 @@
 
   <!-- Modular Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Theme Handler (Light/Dark mode) -->
+  <script src="js/theme.js"></script>
 </head>
 <body>
 
@@ -29,7 +32,10 @@
 <!-- ===== TOPBAR (mobile) ===== -->
 <div class="topbar">
   <span class="topbar-brand"><img src="dhc.jpeg" class="logo-img-xs" alt="BHC"> BHC</span>
-  <div style="display:flex;align-items:center;gap:12px;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="theme-toggle-btn" id="theme-toggle-mobile" onclick="toggleTheme()" title="Ganti Mode Terang/Gelap" aria-label="Ganti Mode Terang/Gelap">
+      <span class="theme-icon"></span>
+    </button>
     <span class="topbar-clock"><span class="topbar-live"></span> <span id="clock-time-mobile">--:--</span></span>
     <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
       <span></span><span></span><span></span>
@@ -138,6 +144,10 @@
     <div class="clock-time" id="clock-time">--:--</div>
     <div class="clock-date" id="clock-date">--</div>
     <div><span class="live-badge"><span class="live-dot"></span>LIVE</span></div>
+    <button class="theme-toggle-btn" id="theme-toggle-sidebar" onclick="toggleTheme()" style="margin-top: 10px;">
+      <span class="theme-icon"></span>
+      <span class="theme-text">Mode Terang</span>
+    </button>
     <button class="logout-btn" onclick="doLogout()">⎋ Keluar</button>
   </div>
 </aside>
@@ -379,7 +389,21 @@
 
   <!-- SETTINGS -->
   <div class="section" id="sec-settings">
-    <div class="page-header"><div><div class="page-title">Settings</div><div class="page-sub">Konfigurasi koneksi, jam kerja, dan notifikasi</div></div></div>
+    <div class="page-header"><div><div class="page-title">Settings</div><div class="page-sub">Konfigurasi koneksi, jam kerja, tampilan, dan notifikasi</div></div></div>
+
+    <div class="settings-card">
+      <div class="settings-card-title">🎨 Tampilan & Aksesibilitas (Mode Terang / Gelap)</div>
+      <div class="form-group">
+        <label class="field-label">Tema Aplikasi</label>
+        <select class="field-input" id="set-theme-select" onchange="applyTheme(this.value)">
+          <option value="light">☀️ Mode Terang (Default HP — Kontras Tinggi & Ramah Mata Lansia)</option>
+          <option value="dark">🌙 Mode Gelap (Klasik Mewah Hitam & Emas BHC)</option>
+        </select>
+      </div>
+      <p style="font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6;">
+        Mode Terang menampilkan latar putih bersih dengan teks hitam pekat berkontras tinggi sehingga teks absensi, jam, dan nama karyawan sangat jelas dibaca di layar HP atau saat siang hari.
+      </p>
+    </div>
 
     <div class="settings-card">
       <div class="settings-card-title">⏰ Jam Kerja & Keterlambatan</div>
