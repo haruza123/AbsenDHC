@@ -3,25 +3,25 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kasir & Admin Dashboard — BHC Professional</title>
-  
+  <title>Event Management — BHC Professional</title>
+
   <!-- CDN Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  
+
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="dhc.jpeg">
-  <link rel="shortcut icon" type="image/png" href="dhc.jpeg">
+  <link rel="icon" type="image/png" href="logo-bhc.png">
+  <link rel="shortcut icon" type="image/png" href="logo-bhc.png">
 
   <!-- Modular Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
-  
-  <!-- Theme Handler (Light/Dark mode) -->
+
+  <!-- Theme Handler -->
   <script src="js/theme.js"></script>
 </head>
 <body>
@@ -31,7 +31,7 @@
 
 <!-- ===== TOPBAR (mobile) ===== -->
 <div class="topbar">
-  <span class="topbar-brand"><img src="dhc.jpeg" class="logo-img-xs" alt="BHC"> BHC</span>
+  <span class="topbar-brand"><img src="logo-bhc.png" class="logo-img-xs" alt="BHC"> BHC</span>
   <div style="display:flex;align-items:center;gap:10px;">
     <button class="theme-toggle-btn" id="theme-toggle-mobile" onclick="toggleTheme()" title="Ganti Mode Terang/Gelap" aria-label="Ganti Mode Terang/Gelap">
       <span class="theme-icon"></span>
@@ -51,13 +51,13 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
       Scanner
     </button>
-    <button class="bottom-nav-item" data-sec="absensi" onclick="showSection('absensi',this)">
+    <button class="bottom-nav-item" data-sec="kehadiran" onclick="showSection('kehadiran',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Absensi
+      Kehadiran
     </button>
-    <button class="bottom-nav-item" data-sec="karyawan" onclick="showSection('karyawan',this)">
+    <button class="bottom-nav-item" data-sec="peserta" onclick="showSection('peserta',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-      Karyawan
+      Peserta
     </button>
     <button class="bottom-nav-item" data-sec="settings" onclick="showSection('settings',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -70,9 +70,9 @@
 <div id="login-overlay">
   <div class="login-card lc2">
     <div class="login-header">
-      <span class="login-icon"><img src="dhc.jpeg" class="logo-img" alt="BHC Professional"></span>
+      <span class="login-icon"><img src="logo-bhc.png" class="logo-img" alt="BHC Professional"></span>
       <div class="login-title">BHC PROFESSIONAL</div>
-      <div class="login-sub">Kasir & Admin Panel</div>
+      <div class="login-sub">Event Management Panel</div>
     </div>
     <div class="login-divider">
       <div class="login-divider-line"></div>
@@ -80,7 +80,7 @@
       <div class="login-divider-line"></div>
     </div>
     <div class="login-field">
-      <label class="login-label">Email Admin/Kasir</label>
+      <label class="login-label">Email Admin</label>
       <input class="login-input" type="email" id="login-email" placeholder="admin@bhc.com" />
     </div>
     <div class="login-field">
@@ -95,44 +95,28 @@
 <!-- ===== SIDEBAR ===== -->
 <aside class="sidebar">
   <div class="sidebar-brand">
-    <span class="brand-icon"><img src="dhc.jpeg" class="logo-img-sm" alt="BHC"></span>
+    <span class="brand-icon"><img src="logo-bhc.png" class="logo-img-sm" alt="BHC"></span>
     <div class="brand-name">BHC PROFESSIONAL</div>
-    <div class="brand-sub">Kasir Panel</div>
+    <div class="brand-sub">Event Management</div>
   </div>
   <nav class="nav">
     <div class="nav-section">Monitor</div>
     <a class="nav-item active" data-sec="scanner" onclick="showSection('scanner',this);return false;" href="javascript:void(0)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      Scanner Kasir
+      Scanner Absensi
     </a>
-    <a class="nav-item" data-sec="absensi" onclick="showSection('absensi',this);return false;" href="javascript:void(0)">
+    <a class="nav-item" data-sec="kehadiran" onclick="showSection('kehadiran',this);return false;" href="javascript:void(0)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Absensi Harian
-    </a>
-    <a class="nav-item" data-sec="rekap" onclick="showSection('rekap',this);return false;" href="javascript:void(0)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Rekap Bulanan
-    </a>
-    <a class="nav-item" data-sec="izin" onclick="showSection('izin',this);return false;" href="javascript:void(0)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      Izin & Sakit
+      Kehadiran
     </a>
     <div class="nav-section">Manajemen</div>
-    <a class="nav-item" data-sec="cabang" onclick="showSection('cabang',this);return false;" href="javascript:void(0)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      Kelola Cabang
+    <a class="nav-item" data-sec="events" onclick="showSection('events',this);return false;" href="javascript:void(0)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Kelola Event
     </a>
-    <a class="nav-item" data-sec="jadwal" onclick="showSection('jadwal',this);return false;" href="javascript:void(0)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      Jadwal Role
-    </a>
-    <a class="nav-item" data-sec="karyawan" onclick="showSection('karyawan',this);return false;" href="javascript:void(0)">
+    <a class="nav-item" data-sec="peserta" onclick="showSection('peserta',this);return false;" href="javascript:void(0)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-      Karyawan
-    </a>
-    <a class="nav-item" data-sec="rapor" onclick="showSection('rapor',this);return false;" href="javascript:void(0)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-      Rapor Karyawan
+      Peserta
     </a>
     <div class="nav-section">Sistem</div>
     <a class="nav-item" data-sec="settings" onclick="showSection('settings',this);return false;" href="javascript:void(0)">
@@ -155,29 +139,27 @@
 <!-- ===== MAIN CONTENT ===== -->
 <main class="main">
 
-  <!-- SCANNER KASIR -->
+  <!-- SCANNER ABSENSI EVENT -->
   <div class="section active" id="sec-scanner">
     <div class="page-header">
       <div>
-        <div class="page-title">Scanner Kasir</div>
-        <div class="page-sub">Scan kartu QR karyawan untuk mencatat absensi secara otomatis</div>
+        <div class="page-title">Scanner Absensi</div>
+        <div class="page-sub">Scan QR peserta untuk mencatat kehadiran event</div>
       </div>
       <div class="header-actions">
-        <select id="scanner-cabang" class="field-input" style="width: 200px; background: var(--surface); border-color: var(--gold-border);">
-          <option value="">Pilih Cabang Aktif...</option>
+        <select id="scanner-event" class="field-input" style="width: 260px; background: var(--surface); border-color: var(--gold-border);">
+          <option value="">Pilih Event Aktif...</option>
         </select>
         <a href="scanner.html" target="_blank" class="btn btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
           <span>🖥️</span> Buka Mode Kios
         </a>
       </div>
     </div>
-    
+
     <div class="scanner-grid">
-      <!-- Kiri: Kamera Scanner -->
       <div class="scanner-camera-card">
         <div class="chart-title" style="margin-bottom: 14px;">Webcam Scanner</div>
 
-        <!-- Scanner Cooldown & Status Indicator -->
         <div id="scanner-cooldown-box" style="width: 100%; max-width: 440px; margin-bottom: 12px; padding: 8px 12px; border-radius: 8px; background: rgba(39, 174, 96, 0.1); border: 1px solid rgba(39, 174, 96, 0.25); display: flex; flex-direction: column; gap: 6px; transition: all 0.3s ease;">
           <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
             <span id="scanner-status-text" style="color: var(--green); font-weight: 600; display: flex; align-items: center; gap: 6px;">
@@ -189,20 +171,17 @@
             <div id="scanner-cooldown-bar" style="width: 0%; height: 100%; background: var(--gold); transition: width 0.08s linear;"></div>
           </div>
         </div>
-        
+
         <div id="scanner-container" style="width: 100%; max-width: 440px; aspect-ratio: 4/3; border: 2px dashed var(--gold-border); border-radius: 12px; overflow: hidden; background: #080808; display: flex; align-items: center; justify-content: center; position: relative;">
           <div id="scanner-reader" style="width: 100%; height: 100%; display: none;"></div>
-          <!-- Laser Scan Line Overlay -->
           <div id="scanner-laser" class="laser-scanning" style="position: absolute; left: 0; right: 0; height: 3px; background: var(--gold); opacity: 0.7; box-shadow: 0 0 8px var(--gold); top: 0; pointer-events: none; display: none; z-index: 5;"></div>
-          <!-- Flash Overlay for success/error feedback -->
           <div id="scanner-flash" style="position: absolute; inset: 0; pointer-events: none; opacity: 0; z-index: 10;"></div>
           <div id="scanner-placeholder" style="position: absolute; display: flex; flex-direction: column; align-items: center; color: var(--muted); font-size: 13px;">
             <span style="font-size: 32px; display: block; margin-bottom: 10px;">📷</span>
             Kamera tidak aktif
           </div>
         </div>
-        
-        <!-- Zoom Slider Container -->
+
         <div id="scanner-zoom-container" style="display: none; width: 100%; max-width: 360px; margin-top: 12px; text-align: left; background: var(--surface); border: 1px solid rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 10px;">
           <label class="field-label" style="display: flex; justify-content: space-between; margin-bottom: 6px; user-select: none;">
             <span style="font-size: 11px; font-weight:600; letter-spacing: 0.5px;">🔍 Zoom Kamera</span>
@@ -210,216 +189,139 @@
           </label>
           <input type="range" id="scanner-zoom" style="width: 100%; accent-color: var(--gold); cursor: pointer;" min="1" max="5" step="0.1" value="1" oninput="applyZoom(this.value)" />
         </div>
-        
+
         <button class="btn btn-gold" id="btn-toggle-scanner" onclick="toggleScanner()" style="margin-top: 20px; min-width: 180px;">🎥 Aktifkan Kamera</button>
-        
+
         <select id="scanner-camera-facing" onchange="onCameraFacingChange()" class="field-input" style="width: 180px; margin-top: 10px; background: var(--surface2); border-color: rgba(255,255,255,0.07); color: var(--text); text-align: center;">
           <option value="environment" selected>📷 Kamera Belakang</option>
-          <option value="user">🤳 Kamera Depan (Selfie)</option>
+          <option value="user">🤳 Kamera Depan</option>
         </select>
-        
+
         <div style="margin-top: 24px; width: 100%; max-width: 300px; border-top: 1px solid var(--border); padding-top: 20px;">
-          <span style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Input Manual ID</span>
+          <span style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Input Manual ID Peserta</span>
           <div style="display: flex; gap: 8px;">
-            <input type="text" id="manual-emp-id" class="field-input" placeholder="EMP001" style="text-align: center;" />
+            <input type="text" id="manual-participant-id" class="field-input" placeholder="PST001" style="text-align: center;" />
             <button class="btn btn-outline" onclick="submitManualScan()">Absen</button>
           </div>
         </div>
       </div>
-      
-      <!-- Kanan: Hasil Pindai Terakhir & Instruksi -->
+
       <div class="chart-card" style="display: flex; flex-direction: column;">
         <div class="chart-title">Hasil Pindai Terakhir</div>
-        
+
         <div id="scan-result-box" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
-          <!-- Default placeholder -->
           <div id="scan-result-empty" style="text-align: center; color: var(--muted);">
             <div style="font-size: 40px; margin-bottom: 12px; opacity: 0.3;">🔲</div>
             <p style="font-size: 13px;">Belum ada scan yang terdeteksi</p>
-            <p style="font-size: 11px; margin-top: 4px; line-height: 1.5;">Pilih cabang terlebih dahulu, lalu arahkan kartu QR karyawan ke kamera scanner.</p>
+            <p style="font-size: 11px; margin-top: 4px; line-height: 1.5;">Pilih event terlebih dahulu, lalu arahkan QR peserta ke kamera scanner.</p>
           </div>
-          
-          <!-- Success Card (hidden by default) -->
+
           <div id="scan-result-card" style="display: none; width: 100%; background: var(--surface2); border: 1px solid var(--gold-border); border-radius: 12px; padding: 20px; text-align: center; position: relative;">
-            <div id="scan-result-status-badge" class="badge b-green" style="font-size: 12px; margin-bottom: 16px;">Masuk (Hadir)</div>
-            <div id="scan-result-avatar" style="width: 64px; height: 64px; border-radius: 50%; background: var(--gold-dim); border: 1px solid var(--gold); color: var(--gold-light); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; margin: 0 auto 12px;">BS</div>
-            <h3 id="scan-result-name" style="font-family: 'Playfair Display', serif; font-size: 18px; color: var(--gold-light); margin-bottom: 4px;">Budi Santoso</h3>
-            <div id="scan-result-id" style="font-family: monospace; font-size: 13px; color: var(--muted); margin-bottom: 12px;">EMP001</div>
-            
+            <div id="scan-result-status-badge" class="badge b-green" style="font-size: 12px; margin-bottom: 16px;">✓ Hadir</div>
+            <div id="scan-result-avatar" style="width: 64px; height: 64px; border-radius: 50%; background: var(--gold-dim); border: 1px solid var(--gold); color: var(--gold-light); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; margin: 0 auto 12px;">—</div>
+            <h3 id="scan-result-name" style="font-family: 'Playfair Display', serif; font-size: 18px; color: var(--gold-light); margin-bottom: 4px;">—</h3>
+            <div id="scan-result-id" style="font-family: monospace; font-size: 13px; color: var(--muted); margin-bottom: 12px;">—</div>
+
             <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; font-size: 12px; text-align: left; gap: 8px;">
-              <div><span style="color: var(--muted);">Waktu:</span> <strong id="scan-result-time" style="color: var(--text);">08:32:15</strong></div>
-              <div><span style="color: var(--muted);">Cabang:</span> <strong id="scan-result-cabang" style="color: var(--text);">Pusat</strong></div>
-            </div>
-            <div id="scan-result-durasi-row" style="display: none; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; margin-top: 10px; font-size: 12px;">
-              <span style="color: var(--muted);">Total Jam Kerja:</span> <strong id="scan-result-durasi" style="color: var(--gold-light);">—</strong>
+              <div><span style="color: var(--muted);">Waktu:</span> <strong id="scan-result-time" style="color: var(--text);">--:--</strong></div>
+              <div><span style="color: var(--muted);">Event:</span> <strong id="scan-result-event" style="color: var(--text);">—</strong></div>
             </div>
           </div>
-          
-          <!-- Alert Msg (error/warning) (hidden by default) -->
+
           <div id="scan-result-error" style="display: none; width: 100%; background: rgba(192,57,43,0.08); border: 1px solid rgba(192,57,43,0.2); border-radius: 12px; padding: 20px; text-align: center; color: #e57373; font-size: 13px; font-weight: 500;">
             <div style="font-size: 30px; margin-bottom: 8px;">🚫</div>
-            <div id="scan-result-error-msg" style="line-height: 1.5;">Kode QR tidak valid atau Karyawan tidak terdaftar.</div>
+            <div id="scan-result-error-msg" style="line-height: 1.5;">QR tidak valid atau peserta tidak terdaftar.</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- PANEL: Belum Absen Hari Ini -->
     <div class="chart-card" style="margin-top: 16px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-        <div class="chart-title" style="margin-bottom: 0;">Belum Absen Hari Ini</div>
-        <button class="btn btn-ghost" style="font-size: 11px; padding: 5px 10px;" onclick="loadBelumAbsen()">⟳ Refresh</button>
+        <div class="chart-title" style="margin-bottom: 0;">Status Kehadiran Peserta</div>
+        <button class="btn btn-ghost" style="font-size: 11px; padding: 5px 10px;" onclick="loadBelumScan()">⟳ Refresh</button>
       </div>
-      <div id="belum-absen-wrap" style="max-height: 260px; overflow-y: auto;">
-        <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 13px;">Pilih cabang untuk melihat data</div>
+      <div id="belum-scan-wrap" style="max-height: 260px; overflow-y: auto;">
+        <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 13px;">Pilih event untuk melihat data</div>
       </div>
     </div>
   </div>
 
-  <!-- ABSENSI HARIAN -->
-  <div class="section" id="sec-absensi">
+  <!-- KEHADIRAN -->
+  <div class="section" id="sec-kehadiran">
     <div class="page-header">
-      <div><div class="page-title">Absensi Harian</div><div class="page-sub" id="today-label">—</div></div>
+      <div><div class="page-title">Kehadiran Event</div><div class="page-sub">Data kehadiran peserta per event</div></div>
       <div class="header-actions">
-        <button class="btn btn-ghost" onclick="window.print()">🖨️ Print</button>
-        <button class="btn btn-ghost" onclick="loadAbsensi()">⟳ Refresh</button>
-        <button class="btn btn-ghost" onclick="sendDailyRecapWA()">📱 Kirim Rekap WA</button>
-        <button class="btn btn-danger" style="font-size:13px; padding:9px 14px;" onclick="autoMarkAlpha()">⚠️ Tandai Alpha Otomatis</button>
-        <button class="btn btn-gold" onclick="openModal('izin')">+ Izin / Libur / Alpha</button>
+        <select id="filter-event-kehadiran" class="field-input" style="width:260px;background:var(--surface);border-color:var(--gold-border);" onchange="loadKehadiran()">
+          <option value="">Pilih Event...</option>
+        </select>
+        <select id="filter-status-kehadiran" onchange="filterTable()" class="field-input" style="width:140px;">
+          <option value="">Semua Status</option>
+          <option value="hadir">Hadir</option>
+          <option value="belum">Belum Hadir</option>
+        </select>
+        <button class="btn btn-ghost" onclick="loadKehadiran()">⟳ Refresh</button>
+        <button class="btn btn-gold" onclick="exportKehadiranExcel()">📗 Export CSV</button>
       </div>
     </div>
-    <div class="filters">
-      <input type="date" id="filter-date" onchange="loadAbsensi()" />
-      <select id="filter-status" onchange="loadAbsensi()">
-        <option value="">Semua Status</option>
-        <option value="hadir">Masuk (Hadir)</option>
-        <option value="keluar">Keluar</option>
-        <option value="izin">Izin</option>
-        <option value="sakit">Sakit</option>
-        <option value="libur">Libur</option>
-        <option value="alpha">Alpha</option>
-      </select>
-      <select id="filter-cabang-absensi" onchange="loadAbsensi()">
-        <option value="">Semua Cabang</option>
-      </select>
-    </div>
     <div class="stats">
-      <div class="stat-card sgreen"><div class="stat-label">Hadir / Masuk</div><div class="stat-value" id="s-hadir">—</div><div class="stat-sub">karyawan hari ini</div></div>
-      <div class="stat-card sblue"><div class="stat-label">Keluar / Pulang</div><div class="stat-value" id="s-keluar-pulang">—</div><div class="stat-sub">karyawan hari ini</div></div>
-      <div class="stat-card sgold"><div class="stat-label">Izin / Sakit / Alpha</div><div class="stat-value" id="s-izin">—</div><div class="stat-sub">karyawan hari ini</div></div>
-      <div class="stat-card sred"><div class="stat-label">Total Karyawan</div><div class="stat-value" id="s-total">—</div><div class="stat-sub">terdaftar</div></div>
+      <div class="stat-card sgreen"><div class="stat-label">Hadir</div><div class="stat-value" id="s-hadir">—</div><div class="stat-sub">peserta</div></div>
+      <div class="stat-card sred"><div class="stat-label">Belum Hadir</div><div class="stat-value" id="s-belum">—</div><div class="stat-sub">peserta</div></div>
+      <div class="stat-card sgold"><div class="stat-label">Total Peserta</div><div class="stat-value" id="s-total">—</div><div class="stat-sub">terdaftar</div></div>
     </div>
     <div class="charts">
-      <div class="chart-card"><div class="chart-title">Kehadiran 30 Hari Terakhir</div><div class="chart-wrap"><canvas id="chartLine"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Distribusi Hari Ini</div><div class="chart-wrap"><canvas id="chartDoughnut"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Distribusi Kehadiran</div><div class="chart-wrap"><canvas id="chartDoughnut"></canvas></div></div>
     </div>
     <div class="table-card">
       <div class="table-header">
-        <span class="table-header-title">Data Absensi</span>
+        <span class="table-header-title">Data Kehadiran</span>
         <input class="search-input" type="text" id="search-input" placeholder="Cari ID / nama..." oninput="filterTable()" />
       </div>
-      <div id="table-wrap"><div class="loading"><div class="spinner"></div>Memuat...</div></div>
+      <div id="table-wrap"><div class="loading"><div class="spinner"></div>Pilih event...</div></div>
       <div class="pagination"><span id="page-info">—</span><div class="page-btns" id="page-btns"></div></div>
     </div>
   </div>
 
-  <!-- REKAP BULANAN -->
-  <div class="section" id="sec-rekap">
+  <!-- KELOLA EVENT -->
+  <div class="section" id="sec-events">
     <div class="page-header">
-      <div><div class="page-title">Rekap Bulanan</div><div class="page-sub">Ringkasan per karyawan</div></div>
+      <div><div class="page-title">Kelola Event</div><div class="page-sub">Buat, edit, dan hapus event/acara</div></div>
       <div class="header-actions">
-        <input type="month" id="filter-month" onchange="loadRekap()" />
-        <select id="filter-cabang-rekap" onchange="loadRekap()"><option value="">Semua Cabang</option></select>
-        <button class="btn btn-ghost" onclick="printRekap()">🖨️ Print / PDF</button>
-        <button class="btn btn-gold" onclick="exportExcel()">📗 Export Excel (.xls)</button>
+        <button class="btn btn-ghost" onclick="loadEvents()">⟳ Refresh</button>
+        <button class="btn btn-gold" onclick="openModal('event')">+ Tambah Event</button>
       </div>
     </div>
-    <div id="rekap-wrap"><div class="loading"><div class="spinner"></div>Pilih bulan...</div></div>
+    <div class="table-card"><div id="events-wrap"><div class="loading"><div class="spinner"></div>Memuat...</div></div></div>
   </div>
 
-  <!-- IZIN & SAKIT -->
-  <div class="section" id="sec-izin">
+  <!-- PESERTA -->
+  <div class="section" id="sec-peserta">
     <div class="page-header">
-      <div><div class="page-title">Izin & Sakit</div><div class="page-sub">Riwayat izin, sakit, dan alpha</div></div>
+      <div><div class="page-title">Peserta</div><div class="page-sub">Kelola daftar peserta & cetak QR tiket</div></div>
       <div class="header-actions">
-        <select id="filter-cabang-izin" onchange="loadIzinList()"><option value="">Semua Cabang</option></select>
-        <button class="btn btn-gold" onclick="openModal('izin')">+ Tambah Izin</button>
+        <select id="filter-event-peserta" class="field-input" style="width:260px;background:var(--surface);border-color:var(--gold-border);" onchange="loadPeserta()">
+          <option value="">Pilih Event...</option>
+        </select>
+        <button class="btn btn-ghost" onclick="loadPeserta()">⟳ Refresh</button>
+        <button class="btn btn-gold" onclick="openModal('peserta')">+ Tambah Peserta</button>
       </div>
     </div>
-    <div id="izin-wrap"><div class="loading"><div class="spinner"></div>Memuat...</div></div>
-  </div>
-
-  <!-- KELOLA CABANG -->
-  <div class="section" id="sec-cabang">
-    <div class="page-header">
-      <div><div class="page-title">Kelola Cabang</div><div class="page-sub">Tambah, edit, dan hapus cabang toko</div></div>
-      <div class="header-actions">
-        <button class="btn btn-ghost" onclick="loadCabang()">⟳ Refresh</button>
-        <button class="btn btn-gold" onclick="openModal('cabang')">+ Tambah Cabang</button>
-      </div>
-    </div>
-    <div class="table-card"><div id="cabang-wrap"><div class="loading"><div class="spinner"></div>Memuat...</div></div></div>
-  </div>
-
-  <!-- JADWAL ROLE -->
-  <div class="section" id="sec-jadwal">
-    <div class="page-header">
-      <div><div class="page-title">Jadwal per Role</div><div class="page-sub">Atur jam masuk & toleransi terlambat berbeda untuk setiap jabatan</div></div>
-      <div class="header-actions">
-        <button class="btn btn-ghost" onclick="loadJadwal()">⟳ Refresh</button>
-        <button class="btn btn-gold" onclick="openModal('jadwal')">+ Tambah Jadwal</button>
-      </div>
-    </div>
-    <div class="table-card"><div id="jadwal-wrap"><div class="loading"><div class="spinner"></div>Memuat...</div></div></div>
-  </div>
-
-  <!-- KARYAWAN -->
-  <div class="section" id="sec-karyawan">
-    <div class="page-header">
-      <div><div class="page-title">Karyawan</div><div class="page-sub">Kelola daftar karyawan & cetak Kartu QR</div></div>
-      <div class="header-actions">
-        <select id="filter-cabang-karyawan" onchange="loadKaryawan()"><option value="">Semua Cabang</option></select>
-        <button class="btn btn-ghost" onclick="loadKaryawan()">⟳ Refresh</button>
-        <button class="btn btn-outline" onclick="syncAndCleanOrphanAttendance()" title="Bersihkan data absensi dari karyawan yang sudah dihapus">🧹 Sinkron Data</button>
-        <button class="btn btn-gold" onclick="openModal('karyawan')">+ Tambah Karyawan</button>
-      </div>
-    </div>
-    <div class="table-card"><div id="karyawan-wrap"><div class="loading"><div class="spinner"></div>Memuat...</div></div></div>
+    <div class="table-card"><div id="peserta-wrap"><div class="loading"><div class="spinner"></div>Pilih event...</div></div></div>
   </div>
 
   <!-- SETTINGS -->
   <div class="section" id="sec-settings">
-    <div class="page-header"><div><div class="page-title">Settings</div><div class="page-sub">Konfigurasi koneksi, jam kerja, tampilan, dan notifikasi</div></div></div>
+    <div class="page-header"><div><div class="page-title">Settings</div><div class="page-sub">Konfigurasi tampilan & notifikasi</div></div></div>
 
     <div class="settings-card">
-      <div class="settings-card-title">🎨 Tampilan & Aksesibilitas (Mode Terang / Gelap)</div>
+      <div class="settings-card-title">🎨 Tampilan</div>
       <div class="form-group">
         <label class="field-label">Tema Aplikasi</label>
         <select class="field-input" id="set-theme-select" onchange="applyTheme(this.value)">
-          <option value="light">☀️ Mode Terang (Default HP — Kontras Tinggi & Ramah Mata Lansia)</option>
-          <option value="dark">🌙 Mode Gelap (Klasik Mewah Hitam & Emas BHC)</option>
+          <option value="light">☀️ Mode Terang</option>
+          <option value="dark">🌙 Mode Gelap</option>
         </select>
       </div>
-      <p style="font-size:12px; color:var(--muted); margin-top:6px; line-height:1.6;">
-        Mode Terang menampilkan latar putih bersih dengan teks hitam pekat berkontras tinggi sehingga teks absensi, jam, dan nama karyawan sangat jelas dibaca di layar HP atau saat siang hari.
-      </p>
-    </div>
-
-    <div class="settings-card">
-      <div class="settings-card-title">⏰ Jam Kerja & Keterlambatan</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="field-label">Jam Masuk (Batas Tepat Waktu)</label>
-          <input class="field-input" type="time" id="set-jam-masuk" value="09:00" />
-        </div>
-        <div class="form-group">
-          <label class="field-label">Toleransi Terlambat (menit)</label>
-          <input class="field-input" type="number" id="set-toleransi" placeholder="0" min="0" max="60" value="0" />
-        </div>
-      </div>
-      <p style="font-size:11px; color:var(--muted); margin-top:6px; line-height:1.6;">Jam kerja default untuk semua karyawan. Jika role/jabatan memiliki jadwal khusus (diatur di menu <b>Jadwal Role</b>), jadwal khusus tersebut yang dipakai.</p>
-      <button class="btn btn-gold" onclick="saveSettings()">Simpan Jam Kerja</button>
-      <div class="save-msg" id="save-msg-jam"></div>
     </div>
 
     <div class="settings-card">
@@ -449,337 +351,168 @@
       <div class="settings-card-title">🔐 Keamanan</div>
       <p style="font-size:13px; color:var(--muted); line-height:1.7;">
         Untuk mengubah password admin, buka <strong>Supabase Dashboard → Authentication → Users</strong> → klik user admin → Edit.
-        <br><br>
-        Pastikan Row Level Security (RLS) sudah diaktifkan di semua tabel untuk melindungi data absensi Anda dari akses publik langsung.
       </p>
     </div>
 
-    <!-- SINKRONISASI & PEMBERSIHAN DATA -->
-    <div class="settings-card" style="border-color: rgba(201,169,110,0.35);">
-      <div class="settings-card-title">🧹 Sinkronisasi & Pembersihan Data Orphan</div>
-      <p style="font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.6;">
-        Fitur ini memeriksa seluruh riwayat absensi dan mencocokkannya dengan daftar karyawan aktif. Jika ditemukan data absensi dari karyawan yang sudah dihapus dari sistem, fitur ini akan membersihkan data tersebut agar database tetap sinkron dan rapi.
-      </p>
-      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <button class="btn btn-gold" id="btn-sync-orphan" onclick="syncAndCleanOrphanAttendance()">
-          <span>🧹</span> Cek & Bersihkan Data Orphan
-        </button>
-      </div>
-      <div id="sync-orphan-status" style="margin-top: 12px; font-size: 12px; display: none; line-height: 1.5;"></div>
-    </div>
-
-    <!-- LOG AUDIT PENGHAPUSAN -->
     <div class="settings-card">
-      <div class="settings-card-title">📜 Log Riwayat Penghapusan Absensi</div>
-      <p style="font-size:12px; color:var(--muted); margin-bottom:16px; line-height:1.6;">
-        Berikut adalah riwayat penghapusan data absensi harian yang dilakukan oleh akun admin/kasir. Disimpan secara terpusat untuk audit data.
+      <div class="settings-card-title">🔗 Link Registrasi Publik</div>
+      <p style="font-size:13px; color:var(--muted); line-height:1.7;">
+        Bagikan link <strong>register.html</strong> ke peserta agar mereka bisa mendaftar sendiri dan mendapatkan QR code.
       </p>
-      <div id="deletion-logs-wrap" style="max-height: 250px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; background: rgba(0,0,0,0.15); margin-bottom: 12px;">
-        <div style="padding: 20px; text-align: center; color: var(--muted); font-size: 13px;">Memuat riwayat log...</div>
-      </div>
-      <div style="display: flex; gap: 8px;">
-        <button class="btn btn-outline" style="font-size: 11px; padding: 6px 12px;" onclick="loadDeletionLogs()">⟳ Segarkan Log</button>
-      </div>
     </div>
-  </div>
-
-  <!-- RAPOR KARYAWAN -->
-  <div class="section" id="sec-rapor">
-    <div class="page-header">
-      <div><div class="page-title">Rapor Karyawan</div><div class="page-sub">Statistik kehadiran per karyawan dalam satu bulan</div></div>
-      <div class="header-actions">
-        <select id="rapor-emp" class="field-input" style="width:220px; background:var(--surface); border-color:var(--gold-border);" onchange="loadRapor()">
-          <option value="">Pilih Karyawan...</option>
-        </select>
-        <input type="month" id="rapor-month" onchange="loadRapor()" class="field-input" style="background:var(--surface); border-color:var(--gold-border);" />
-        <button class="btn btn-ghost" onclick="loadRapor()">⟳ Refresh</button>
-        <button class="btn btn-gold" onclick="printRapor()" style="display: inline-flex; align-items: center; gap: 6px;">🖨️ Cetak / PDF Rapor</button>
-      </div>
-    </div>
-    <div id="rapor-wrap"><div class="empty-state"><div class="empty-icon">📊</div><p>Pilih karyawan dan bulan untuk melihat rapor</p></div></div>
   </div>
 
 </main>
 
-<!-- MODAL KONFIRMASI ABSEN KELUAR -->
-<div class="modal-overlay" id="modal-confirm-keluar">
-  <div class="modal" style="max-width: 380px; text-align: center;">
-    <div style="font-size: 40px; margin-bottom: 12px;">📤</div>
-    <div class="modal-title" style="text-align: center;">Konfirmasi Absen Pulang</div>
-    <p style="color: var(--muted); font-size: 13px; margin-bottom: 6px;">Karyawan berikut akan dicatat <strong style="color: var(--blue-light, #7ec8e3);">pulang</strong>:</p>
-    <div style="background: var(--surface2); border: 1px solid var(--gold-border); border-radius: 10px; padding: 14px; margin: 12px 0;">
-      <div id="confirm-keluar-name" style="font-family: 'Playfair Display', serif; font-size: 16px; color: var(--gold-light); font-weight: 700;">—</div>
-      <div id="confirm-keluar-id" style="font-family: monospace; font-size: 12px; color: var(--muted); margin-top: 4px;">—</div>
-      <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">
-        Masuk: <strong id="confirm-keluar-jam-masuk" style="color: var(--green);">--:--</strong>
-        &nbsp;|&nbsp; Durasi kerja: <strong id="confirm-keluar-durasi" style="color: var(--gold-light);">--:--</strong>
-      </div>
+<!-- MODAL: TAMBAH EVENT -->
+<div class="modal-overlay" id="modal-event">
+  <div class="modal">
+    <div class="modal-title">Tambah Event Baru</div>
+    <div class="form-row">
+      <div class="form-group"><label class="field-label">Kode Event *</label><input class="field-input" type="text" id="me-code" placeholder="SEM-2026-001" /></div>
+      <div class="form-group"><label class="field-label">Nama Event *</label><input class="field-input" type="text" id="me-name" placeholder="Seminar Digital Marketing" /></div>
     </div>
-    <div class="modal-actions" style="justify-content: center; gap: 12px;">
-      <button class="btn btn-ghost" onclick="cancelKeluarConfirm()">Batal</button>
-      <button class="btn btn-gold" id="btn-confirm-keluar" onclick="proceedKeluarConfirm()">Ya, Absen Pulang</button>
+    <div class="form-row">
+      <div class="form-group"><label class="field-label">Tanggal *</label><input class="field-input" type="date" id="me-date" /></div>
+      <div class="form-group"><label class="field-label">Lokasi</label><input class="field-input" type="text" id="me-location" placeholder="Aula Gedung A" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="field-label">Deskripsi</label><textarea class="field-input" id="me-desc" placeholder="Deskripsi event (opsional)"></textarea></div>
+      <div class="form-group"><label class="field-label">Maks Peserta</label><input class="field-input" type="number" id="me-max" placeholder="100 (opsional)" min="1" /></div>
+    </div>
+    <div id="me-status" class="save-msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('event')">Batal</button>
+      <button class="btn btn-gold" onclick="submitEvent()">Tambah</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL IZIN -->
-<div class="modal-overlay" id="modal-izin">
+<!-- MODAL: EDIT EVENT -->
+<div class="modal-overlay" id="modal-edit-event">
   <div class="modal">
-    <div class="modal-title">Tambah Izin / Sakit / Libur / Alpha</div>
+    <div class="modal-title">Edit Event</div>
+    <input type="hidden" id="mee-id" />
+    <div class="form-row">
+      <div class="form-group"><label class="field-label">Kode Event</label><input class="field-input" type="text" id="mee-code" readonly style="opacity:0.6;cursor:not-allowed;background:var(--surface3);" /></div>
+      <div class="form-group"><label class="field-label">Nama Event *</label><input class="field-input" type="text" id="mee-name" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="field-label">Tanggal *</label><input class="field-input" type="date" id="mee-date" /></div>
+      <div class="form-group"><label class="field-label">Lokasi</label><input class="field-input" type="text" id="mee-location" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="field-label">Deskripsi</label><textarea class="field-input" id="mee-desc"></textarea></div>
+      <div class="form-group"><label class="field-label">Maks Peserta</label><input class="field-input" type="number" id="mee-max" min="1" /></div>
+    </div>
+    <div id="mee-status" class="save-msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('edit-event')">Batal</button>
+      <button class="btn btn-gold" onclick="submitEditEvent()">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
 
+<!-- MODAL: TAMBAH PESERTA -->
+<div class="modal-overlay" id="modal-peserta">
+  <div class="modal">
+    <div class="modal-title">Tambah Peserta</div>
     <div class="form-group">
-      <label class="field-label">Terapkan ke</label>
-      <select class="field-input" id="mi-target" onchange="toggleIzinTarget()">
-        <option value="individual">Karyawan Tertentu</option>
-        <option value="semua">Semua Karyawan (Libur / Alpha Massal)</option>
-      </select>
+      <label class="field-label">Event *</label>
+      <select class="field-input" id="mp-event"><option value="">Pilih Event...</option></select>
     </div>
-
-    <div id="mi-emp-fields">
-      <div class="form-row">
-        <div class="form-group"><label class="field-label">ID Karyawan</label><input class="field-input" type="text" id="mi-id" placeholder="EMP001" /></div>
-        <div class="form-group"><label class="field-label">Nama</label><input class="field-input" type="text" id="mi-name" placeholder="Nama karyawan" /></div>
-      </div>
-    </div>
-
     <div class="form-row">
-      <div class="form-group"><label class="field-label">Tanggal Mulai</label><input class="field-input" type="date" id="mi-date" /></div>
-      <div class="form-group"><label class="field-label">Tanggal Selesai</label><input class="field-input" type="date" id="mi-date-end" /></div>
+      <div class="form-group"><label class="field-label">ID Peserta *</label><input class="field-input" type="text" id="mp-id" placeholder="PST001" /></div>
+      <div class="form-group"><label class="field-label">Nama *</label><input class="field-input" type="text" id="mp-name" placeholder="Nama lengkap" /></div>
     </div>
-
     <div class="form-row">
-      <div class="form-group">
-        <label class="field-label">Status</label>
-        <select class="field-input" id="mi-status">
-          <option value="izin">Izin</option>
-          <option value="sakit">Sakit</option>
-          <option value="libur">Libur</option>
-          <option value="alpha">Alpha</option>
-        </select>
-      </div>
-      <div class="form-group"><label class="field-label">Cabang</label><select class="field-input" id="mi-cabang"><option value="Pusat">Pusat</option></select></div>
+      <div class="form-group"><label class="field-label">Email</label><input class="field-input" type="email" id="mp-email" placeholder="email@contoh.com" /></div>
+      <div class="form-group"><label class="field-label">No. HP</label><input class="field-input" type="text" id="mp-phone" placeholder="08xxxxxxxxxx" /></div>
     </div>
-
-    <div class="form-group"><label class="field-label">Keterangan</label><textarea class="field-input" id="mi-notes" placeholder="Alasan / keterangan..."></textarea></div>
-
-    <div id="mi-preview" style="display:none; margin-top:8px; padding:10px 14px; border-radius:9px; font-size:12px; background:rgba(201,169,110,0.08); border:1px solid var(--gold-border); color:var(--muted);"></div>
-
+    <div class="form-group"><label class="field-label">Organisasi / Instansi</label><input class="field-input" type="text" id="mp-org" placeholder="PT Contoh / Universitas X" /></div>
+    <div id="mp-status" class="save-msg"></div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('izin')">Batal</button>
-      <button class="btn btn-gold" onclick="submitIzin()">Simpan</button>
+      <button class="btn btn-ghost" onclick="closeModal('peserta')">Batal</button>
+      <button class="btn btn-gold" onclick="submitPeserta()">Tambah</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL KARYAWAN -->
-<div class="modal-overlay" id="modal-karyawan">
+<!-- MODAL: EDIT PESERTA -->
+<div class="modal-overlay" id="modal-edit-peserta">
   <div class="modal">
-    <div class="modal-title">Tambah Karyawan</div>
+    <div class="modal-title">Edit Peserta</div>
+    <input type="hidden" id="mep-db-id" />
     <div class="form-row">
-      <div class="form-group"><label class="field-label">ID Karyawan *</label><input class="field-input" type="text" id="mk-id" placeholder="EMP001" /></div>
-      <div class="form-group"><label class="field-label">Nama *</label><input class="field-input" type="text" id="mk-name" placeholder="Nama karyawan" /></div>
+      <div class="form-group"><label class="field-label">ID Peserta</label><input class="field-input" type="text" id="mep-id" readonly style="opacity:0.6;cursor:not-allowed;background:var(--surface3);" /></div>
+      <div class="form-group"><label class="field-label">Nama *</label><input class="field-input" type="text" id="mep-name" /></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="field-label">Jabatan</label><select class="field-input" id="mk-role"><option value="">Pilih Jabatan...</option></select></div>
-      <div class="form-group"><label class="field-label">Cabang</label><select class="field-input" id="mk-cabang"><option value="Pusat">Pusat</option></select></div>
+      <div class="form-group"><label class="field-label">Email</label><input class="field-input" type="email" id="mep-email" /></div>
+      <div class="form-group"><label class="field-label">No. HP</label><input class="field-input" type="text" id="mep-phone" /></div>
     </div>
-    <div class="form-group"><label class="field-label">No. HP / Email</label><input class="field-input" type="text" id="mk-contact" placeholder="08xx / email@..." /></div>
-    <div id="mk-status" class="save-msg"></div>
+    <div class="form-group"><label class="field-label">Organisasi / Instansi</label><input class="field-input" type="text" id="mep-org" /></div>
+    <div id="mep-status" class="save-msg"></div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('karyawan')">Batal</button>
-      <button class="btn btn-gold" onclick="submitKaryawan()">Tambah</button>
+      <button class="btn btn-ghost" onclick="closeModal('edit-peserta')">Batal</button>
+      <button class="btn btn-gold" onclick="submitEditPeserta()">Simpan Perubahan</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL EDIT KARYAWAN -->
-<div class="modal-overlay" id="modal-edit-karyawan">
-  <div class="modal">
-    <div class="modal-title">Edit Karyawan</div>
-    <input type="hidden" id="mek-db-id" />
-    <div class="form-row">
-      <div class="form-group">
-        <label class="field-label">ID Karyawan</label>
-        <input class="field-input" type="text" id="mek-id" readonly style="opacity: 0.6; cursor: not-allowed; background: var(--surface3);" />
-      </div>
-      <div class="form-group">
-        <label class="field-label">Nama Karyawan *</label>
-        <input class="field-input" type="text" id="mek-name" placeholder="Nama karyawan" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="field-label">Jabatan</label>
-        <select class="field-input" id="mek-role"><option value="">Pilih Jabatan...</option></select>
-      </div>
-      <div class="form-group">
-        <label class="field-label">Cabang</label>
-        <select class="field-input" id="mek-cabang"><option value="Pusat">Pusat</option></select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="field-label">No. HP / Email</label>
-      <input class="field-input" type="text" id="mek-contact" placeholder="08xx / email@..." />
-    </div>
-    <div id="mek-status" class="save-msg"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('edit-karyawan')">Batal</button>
-      <button class="btn btn-gold" onclick="submitEditKaryawan()">Simpan Perubahan</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL KARTU QR KARYAWAN -->
+<!-- MODAL: QR TIKET PESERTA -->
 <div class="modal-overlay" id="modal-qr-card">
   <div class="modal" style="width: 360px; max-width: 95vw; padding: 24px; display: flex; flex-direction: column; align-items: center; position: relative;">
-    <div class="modal-title" style="align-self: flex-start; margin-bottom: 15px;">Kartu QR Karyawan</div>
-    
-    <!-- Bagian Kartu ID Card -->
+    <div class="modal-title" style="align-self: flex-start; margin-bottom: 15px;">QR Tiket Peserta</div>
+
     <div id="id-card-view" style="width: 100%; max-width: 290px; padding: 22px 18px; background: linear-gradient(145deg, #181818, #0e0e0e); border: 1px solid var(--gold); border-radius: 16px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.6); position: relative; margin-bottom: 20px; color: var(--text);">
-      <div style="position: absolute; bottom: 8px; right: 8px; opacity: 0.04; pointer-events: none; line-height: 1;"><img src="dhc.jpeg" style="width:80px; mix-blend-mode:multiply;"></div>
       <div class="corner tl" style="top: 8px; left: 8px; border-width: 1px 0 0 1px; width: 10px; height: 10px;"></div>
       <div class="corner tr" style="top: 8px; right: 8px; border-width: 1px 1px 0 0; width: 10px; height: 10px;"></div>
       <div class="corner bl" style="bottom: 8px; left: 8px; border-width: 0 0 1px 1px; width: 10px; height: 10px;"></div>
       <div class="corner br" style="bottom: 8px; right: 8px; border-width: 0 1px 1px 0; width: 10px; height: 10px;"></div>
-      
-      <img src="dhc.jpeg" style="height: 30px; object-fit: contain; mix-blend-mode: multiply; display: block; margin: 0 auto 6px;">
+
+      <img src="logo-bhc.png" style="height: 30px; object-fit: contain; display: block; margin: 0 auto 6px;">
       <div style="font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 900; color: var(--gold-light); letter-spacing: 1px; text-transform: uppercase;">BHC Professional</div>
-      <div style="font-size: 8px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-top: 2px; font-weight: 600;">ID Card Karyawan</div>
-      
+      <div style="font-size: 8px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-top: 2px; font-weight: 600;">Tiket Peserta Event</div>
+
       <div style="width: 30px; height: 1px; background: var(--gold-border); margin: 10px auto 14px;"></div>
-      
+
       <div id="card-avatar" style="width: 48px; height: 48px; border-radius: 50%; background: var(--gold-dim); border: 1px solid var(--gold-border); color: var(--gold); font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;">—</div>
-      
+
       <h4 id="card-name" style="font-family: 'Playfair Display', serif; font-size: 14px; color: var(--gold-light); font-weight: 700; margin-bottom: 2px;">—</h4>
-      <div id="card-role" style="font-size: 10px; color: var(--muted); margin-bottom: 6px;">—</div>
+      <div id="card-org" style="font-size: 10px; color: var(--muted); margin-bottom: 6px;">—</div>
       <div id="card-id" style="font-family: monospace; font-size: 11px; background: rgba(255,255,255,0.03); color: var(--gold); display: inline-block; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(201,169,110,0.1);">—</div>
-      
-      <!-- Container QR Code -->
-      <div style="background: #ffffff; width: 130px; height: 130px; border-radius: 8px; margin: 15px auto; display: flex; align-items: center; justify-content: center; padding: 6px;">
+
+      <div style="margin-top: 10px; font-size: 10px;">
+        <div id="card-event-name" style="color: var(--gold-light); font-weight: 600;">—</div>
+        <div id="card-event-date" style="color: var(--muted); font-size: 9px;">—</div>
+      </div>
+
+      <div style="background: #ffffff; width: 130px; height: 130px; border-radius: 8px; margin: 12px auto; display: flex; align-items: center; justify-content: center; padding: 6px;">
         <div id="card-qrcode"></div>
       </div>
-      
-      <div style="font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.3;">Scan untuk Absen Masuk/Keluar<br><span style="color: var(--gold); opacity: 0.7;">Hanya untuk Dipindai Kasir</span></div>
+
+      <div style="font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.3;">Tunjukkan QR ini saat registrasi<br><span style="color: var(--gold); opacity: 0.7;">di lokasi event</span></div>
     </div>
-    
+
     <div class="modal-actions" style="width: 100%; gap: 10px;">
       <button class="btn btn-ghost" style="flex: 1;" onclick="closeModal('qr-card')">Tutup</button>
-      <button class="btn btn-gold" style="flex: 1;" onclick="printEmployeeCard()">🖨️ Cetak Kartu</button>
+      <button class="btn btn-gold" style="flex: 1;" onclick="printParticipantCard()">🖨️ Cetak Tiket</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL TAMBAH CABANG -->
-<div class="modal-overlay" id="modal-cabang">
-  <div class="modal">
-    <div class="modal-title">Tambah Cabang Baru</div>
-    <div class="form-group">
-      <label class="field-label">Nama Cabang *</label>
-      <input class="field-input" type="text" id="mc-nama" placeholder="Contoh: Cabang BSD, Cabang Kelapa Gading..." />
-    </div>
-    <div class="form-group">
-      <label class="field-label">Alamat / Keterangan</label>
-      <input class="field-input" type="text" id="mc-alamat" placeholder="Jl. Contoh No. 123 (opsional)" />
-    </div>
-    <div id="mc-status" class="save-msg"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('cabang')">Batal</button>
-      <button class="btn btn-gold" onclick="submitCabang()">Tambah</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL EDIT CABANG -->
-<div class="modal-overlay" id="modal-edit-cabang">
-  <div class="modal">
-    <div class="modal-title">Edit Cabang</div>
-    <input type="hidden" id="mec-id" />
-    <div class="form-group">
-      <label class="field-label">Nama Cabang *</label>
-      <input class="field-input" type="text" id="mec-nama" placeholder="Nama cabang" />
-    </div>
-    <div class="form-group">
-      <label class="field-label">Alamat / Keterangan</label>
-      <input class="field-input" type="text" id="mec-alamat" placeholder="Alamat (opsional)" />
-    </div>
-    <div id="mec-status" class="save-msg"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('edit-cabang')">Batal</button>
-      <button class="btn btn-gold" onclick="submitEditCabang()">Simpan Perubahan</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: TAMBAH JADWAL ROLE -->
-<div class="modal-overlay" id="modal-jadwal">
-  <div class="modal">
-    <div class="modal-title">Tambah Jadwal Role</div>
-    <div class="form-group">
-      <label class="field-label">Nama Role / Jabatan *</label>
-      <input class="field-input" type="text" id="mj-nama" placeholder="contoh: Kasir, Barber, Manager" />
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="field-label">Jam Masuk *</label>
-        <input class="field-input" type="time" id="mj-jam" value="09:00" />
-      </div>
-      <div class="form-group">
-        <label class="field-label">Toleransi (menit)</label>
-        <input class="field-input" type="number" id="mj-toleransi" placeholder="0" min="0" max="120" value="0" />
-      </div>
-    </div>
-    <div id="mj-status" class="save-msg"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('jadwal')">Batal</button>
-      <button class="btn btn-gold" onclick="submitJadwal()">Simpan</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: EDIT JADWAL ROLE -->
-<div class="modal-overlay" id="modal-edit-jadwal">
-  <div class="modal">
-    <div class="modal-title">Edit Jadwal Role</div>
-    <input type="hidden" id="mej-id" />
-    <div class="form-group">
-      <label class="field-label">Nama Role / Jabatan *</label>
-      <input class="field-input" type="text" id="mej-nama" placeholder="Nama role" />
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="field-label">Jam Masuk *</label>
-        <input class="field-input" type="time" id="mej-jam" value="09:00" />
-      </div>
-      <div class="form-group">
-        <label class="field-label">Toleransi (menit)</label>
-        <input class="field-input" type="number" id="mej-toleransi" placeholder="0" min="0" max="120" value="0" />
-      </div>
-    </div>
-    <div id="mej-status" class="save-msg"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('edit-jadwal')">Batal</button>
-      <button class="btn btn-gold" onclick="submitEditJadwal()">Simpan Perubahan</button>
-    </div>
-  </div>
-</div>
-
-<!-- PRINT CONTAINERS (Hidden on screen, only visible in print media) -->
+<!-- PRINT CONTAINER -->
 <div id="print-card-wrapper" style="display: none;"></div>
-<div id="print-rapor-wrapper" style="display: none;"></div>
-<div id="print-rekap-wrapper" style="display: none;"></div>
 
 <!-- Modular Scripts -->
 <script src="js/config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/settings.js"></script>
-<script src="js/cabang.js"></script>
-<script src="js/jadwal.js"></script>
+<script src="js/events.js"></script>
 <script src="js/scanner.js"></script>
-<script src="js/absensi.js"></script>
-<script src="js/rekap.js"></script>
-<script src="js/karyawan.js"></script>
-<script src="js/izin.js"></script>
-<script src="js/rapor.js"></script>
+<script src="js/kehadiran.js"></script>
+<script src="js/peserta.js"></script>
 <script src="js/app.js"></script>
 
 </body>
