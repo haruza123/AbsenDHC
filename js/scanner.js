@@ -1,7 +1,8 @@
 // ============================================================
-// MODUL SCANNER QR & LIVE STATUS KEHADIRAN EVENT
+// MODUL SCANNER KASIR & LIVE STATUS KEHADIRAN
 // ============================================================
 let scannerTransitioning = false;
+let pendingKeluarData = null;
 
 async function toggleScanner() {
   if (scannerTransitioning) return;
@@ -10,10 +11,10 @@ async function toggleScanner() {
   const btn = document.getElementById('btn-toggle-scanner');
   const placeholder = document.getElementById('scanner-placeholder');
   const container = document.getElementById('scanner-reader');
-  const selectedEvent = document.getElementById('scanner-event').value;
+  const selectedCabang = document.getElementById('scanner-cabang').value;
 
-  if (!selectedEvent) {
-    alert('Silakan pilih event terlebih dahulu!');
+  if (!selectedCabang) {
+    alert('Silakan pilih cabang aktif terlebih dahulu!');
     scannerTransitioning = false;
     return;
   }
@@ -21,7 +22,11 @@ async function toggleScanner() {
   btn.disabled = true;
 
   if (isScanning) {
-    try { await html5QrCode.stop(); } catch (err) { console.warn('Stop scanner:', err); }
+    try {
+      await html5QrCode.stop();
+    } catch (err) {
+      console.warn('Stop scanner warning:', err);
+    }
     isScanning = false;
     html5QrCode = null;
     btn.textContent = '🎥 Aktifkan Kamera';
@@ -55,17 +60,28 @@ async function toggleScanner() {
         disableFlip: false
       };
 
-      await html5QrCode.start({ facingMode: facingModeValue }, config, onScanSuccess, onScanFailure);
+      // Html5Qrcode mewajibkan objek cameraIdOrConfig memiliki tepat 1 key
+      const cameraConstraints = { facingMode: facingModeValue };
 
+      await html5QrCode.start(cameraConstraints, config, onScanSuccess, onScanFailure);
+
+      // Optimasi kamera & zoom slider
       try {
         const track = getCameraVideoTrack();
         if (track) {
           const caps = (typeof track.getCapabilities === 'function') ? track.getCapabilities() : {};
           const adv = [];
-          if (caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')) adv.push({ focusMode: 'continuous' });
-          if (caps.exposureMode && Array.isArray(caps.exposureMode) && caps.exposureMode.includes('continuous')) adv.push({ exposureMode: 'continuous' });
-          if (adv.length > 0 && typeof track.applyConstraints === 'function') await track.applyConstraints({ advanced: adv });
+          if (caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')) {
+            adv.push({ focusMode: 'continuous' });
+          }
+          if (caps.exposureMode && Array.isArray(caps.exposureMode) && caps.exposureMode.includes('continuous')) {
+            adv.push({ exposureMode: 'continuous' });
+          }
+          if (adv.length > 0 && typeof track.applyConstraints === 'function') {
+            await track.applyConstraints({ advanced: adv });
+          }
 
+          // Zoom slider
           if (caps.zoom) {
             const zoomInput = document.getElementById('scanner-zoom');
             zoomInput.min = caps.zoom.min;
@@ -79,14 +95,17 @@ async function toggleScanner() {
             document.getElementById('scanner-zoom-container').style.display = 'none';
           }
         }
-      } catch (e) { console.warn('[Scanner] Camera optimization:', e); }
+      } catch (e) {
+        console.warn('[Scanner] Optimasi kamera info:', e);
+      }
 
       isScanning = true;
       btn.textContent = '🛑 Matikan Kamera';
       btn.className = 'btn btn-danger';
+
     } catch (err) {
       console.error('Gagal mengakses kamera:', err);
-      showToast('Gagal mengakses kamera. Coba tutup aplikasi lain yang menggunakan kamera.', 'error');
+      showToast('Gagal mengakses kamera. Coba tutup aplikasi lain yang menggunakan kamera, lalu coba lagi.', 'error');
       placeholder.style.display = 'flex';
       container.style.display = 'none';
       document.getElementById('scanner-laser').style.display = 'none';
@@ -121,31 +140,30 @@ async function applyZoom(value) {
   try {
     const track = getCameraVideoTrack();
     if (track && typeof track.applyConstraints === 'function') {
-      await track.applyConstraints({ advanced: [{ zoom: parseFloat(value) }] });
+      await track.applyConstraints({
+        advanced: [{ zoom: parseFloat(value) }]
+      });
       const zoomVal = document.getElementById('zoom-val');
       if (zoomVal) zoomVal.textContent = parseFloat(value).toFixed(1) + 'x';
     }
-  } catch (err) { console.warn('Gagal mengubah zoom:', err); }
+  } catch (err) {
+    console.warn('Gagal mengubah zoom:', err);
+  }
 }
 
 function onScanSuccess(decodedText) {
   const now = Date.now();
-  if (now - lastScanTime < SCAN_COOLDOWN) return;
-
+  if (now - lastScanTime < SCAN_COOLDOWN) return; // ignore duplicates
+  
+  let empId = decodedText.trim();
+  if (decodedText.startsWith('BARBER_EMP:')) {
+    empId = decodedText.split(':')[1];
+  }
+  
+  empId = empId.trim().toUpperCase();
   lastScanTime = now;
   triggerScannerCooldown(SCAN_COOLDOWN);
-
-  let participantId = decodedText.trim();
-  let eventIdFromQr = null;
-
-  if (decodedText.startsWith('EVENT_PST:')) {
-    const parts = decodedText.split(':');
-    participantId = parts[1];
-    eventIdFromQr = parts[2] || null;
-  }
-
-  participantId = participantId.trim().toUpperCase();
-  processAttendanceScan(participantId, eventIdFromQr);
+  processAbsenScanner(empId);
 }
 
 function onScanFailure(error) {
@@ -159,20 +177,24 @@ function showScanError(msg) {
   document.getElementById('scan-result-card').style.display = 'none';
   const errorBox = document.getElementById('scan-result-error');
   document.getElementById('scan-result-error-msg').textContent = msg;
-
+  
   const flash = document.getElementById('scanner-flash');
-  if (flash) { flash.className = ''; void flash.offsetWidth; flash.classList.add('flash-error'); }
-
+  if (flash) {
+    flash.className = '';
+    void flash.offsetWidth;
+    flash.classList.add('flash-error');
+  }
+  
   errorBox.className = '';
   void errorBox.offsetWidth;
   errorBox.classList.add('animate-pop-in', 'error-glow');
   errorBox.style.display = 'block';
-
+  
   showToast(msg, 'error');
   setTimeout(resetScannerResultView, 5000);
 }
 
-function showScanSuccess(participantId, name, org, eventName) {
+function showScanSuccess(empId, name, role, cabang, status, time, lateMinutes = 0, durasi = null) {
   document.getElementById('scan-result-empty').style.display = 'none';
   document.getElementById('scan-result-error').style.display = 'none';
   const card = document.getElementById('scan-result-card');
@@ -180,27 +202,69 @@ function showScanSuccess(participantId, name, org, eventName) {
   const avatar = document.getElementById('scan-result-avatar');
 
   document.getElementById('scan-result-name').textContent = name;
-  document.getElementById('scan-result-id').textContent = participantId;
-  document.getElementById('scan-result-time').textContent = new Date().toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit', ...tz });
-  document.getElementById('scan-result-event').textContent = eventName;
+  document.getElementById('scan-result-id').textContent = empId;
+  document.getElementById('scan-result-time').textContent = new Date(time).toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit', ...tz });
+  document.getElementById('scan-result-cabang').textContent = cabang;
 
-  const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
   avatar.textContent = initials;
 
-  badge.textContent = '✓ Hadir';
-  badge.className = 'badge b-green';
-  avatar.style.borderColor = 'var(--green)';
-  avatar.style.color = '#5dca87';
+  let glowClass = 'success-glow';
+  let toastMsg = '';
+  let toastType = 'success';
+
+  if (status === 'hadir') {
+    if (lateMinutes > 0) {
+      badge.textContent = `⚠️ Masuk — Terlambat ${lateMinutes} mnt`;
+      badge.className = 'badge b-yellow';
+      avatar.style.borderColor = 'var(--yellow)';
+      avatar.style.color = '#e5c800';
+      glowClass = 'error-glow';
+      toastMsg = `⚠️ <b>${name}</b> masuk (Terlambat ${lateMinutes} mnt)`;
+      toastType = 'warning';
+    } else {
+      badge.textContent = '✓ Masuk (Tepat Waktu)';
+      badge.className = 'badge b-green';
+      avatar.style.borderColor = 'var(--green)';
+      avatar.style.color = '#5dca87';
+      glowClass = 'success-glow';
+      toastMsg = `✅ <b>${name}</b> masuk (Tepat Waktu)`;
+      toastType = 'success';
+    }
+  } else {
+    badge.textContent = '✓ Keluar';
+    badge.className = 'badge b-blue';
+    avatar.style.borderColor = 'var(--blue)';
+    avatar.style.color = '#7ec8e3';
+    glowClass = 'blue-glow';
+    toastMsg = `📤 <b>${name}</b> keluar` + (durasi ? ` (${durasi})` : '');
+    toastType = 'blue';
+  }
+
+  const durasiRow = document.getElementById('scan-result-durasi-row');
+  const durasiEl = document.getElementById('scan-result-durasi');
+  if (durasiRow && durasiEl) {
+    if (status === 'keluar' && durasi) {
+      durasiEl.textContent = durasi;
+      durasiRow.style.display = 'block';
+    } else {
+      durasiRow.style.display = 'none';
+    }
+  }
 
   const flash = document.getElementById('scanner-flash');
-  if (flash) { flash.className = ''; void flash.offsetWidth; flash.classList.add('flash-success'); }
+  if (flash) {
+    flash.className = '';
+    void flash.offsetWidth;
+    flash.classList.add('flash-success');
+  }
 
   card.className = '';
   void card.offsetWidth;
-  card.classList.add('animate-pop-in', 'success-glow');
+  card.classList.add('animate-pop-in', glowClass);
   card.style.display = 'block';
 
-  showToast(`✅ <b>${escapeHtml(name)}</b> — Hadir`, 'success');
+  showToast(toastMsg, toastType);
   setTimeout(resetScannerResultView, 5000);
 }
 
@@ -216,7 +280,7 @@ function resetScannerResultView() {
 function showToast(message, type = 'success') {
   const container = document.getElementById('toast-container');
   if (!container) return;
-
+  
   const toast = document.createElement('div');
   toast.style.pointerEvents = 'auto';
   toast.style.background = 'var(--surface)';
@@ -230,126 +294,264 @@ function showToast(message, type = 'success') {
   toast.style.gap = '10px';
   toast.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
   toast.style.border = '1px solid var(--border)';
-
+  
   let borderCol = 'var(--gold)';
   let icon = '🔔';
-  if (type === 'success') { borderCol = 'var(--green)'; icon = '✅'; }
-  else if (type === 'error') { borderCol = 'var(--red)'; icon = '❌'; }
-  else if (type === 'warning') { borderCol = 'var(--yellow)'; icon = '⚠️'; }
-
+  if (type === 'success') {
+    borderCol = 'var(--green)';
+    icon = '✅';
+  } else if (type === 'error') {
+    borderCol = 'var(--red)';
+    icon = '❌';
+  } else if (type === 'warning') {
+    borderCol = 'var(--yellow)';
+    icon = '⚠️';
+  } else if (type === 'blue') {
+    borderCol = 'var(--blue)';
+    icon = '📤';
+  }
+  
   toast.style.borderLeft = `4px solid ${borderCol}`;
   toast.innerHTML = `<span style="font-size: 16px;">${icon}</span><span style="flex: 1; line-height: 1.4;">${message}</span>`;
-
+  
   toast.style.opacity = '0';
   toast.style.transform = 'translateY(-20px) scale(0.95)';
   toast.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+  
   container.appendChild(toast);
-
-  setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0) scale(1)'; }, 10);
+  
+  setTimeout(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateY(0) scale(1)';
+  }, 10);
+  
   setTimeout(() => {
     toast.style.opacity = '0';
     toast.style.transform = 'translateY(-20px) scale(0.95)';
-    setTimeout(() => toast.remove(), 300);
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
   }, 4000);
 }
 
 function submitManualScan() {
-  const input = document.getElementById('manual-participant-id');
-  const pId = input.value.trim().toUpperCase();
-  if (!pId) { alert('Masukkan ID Peserta!'); return; }
+  const input = document.getElementById('manual-emp-id');
+  const empId = input.value.trim().toUpperCase();
+  if (!empId) {
+    alert('Masukkan ID Karyawan!');
+    return;
+  }
   triggerScannerCooldown(SCAN_COOLDOWN);
-  processAttendanceScan(pId, null);
+  processAbsenScanner(empId);
   input.value = '';
 }
 
-async function processAttendanceScan(participantId, eventIdFromQr) {
-  const selectedEventId = document.getElementById('scanner-event').value;
-  if (!selectedEventId) {
-    showScanError('Silakan pilih event terlebih dahulu.');
+async function processAbsenScanner(empId) {
+  const selectedCabang = document.getElementById('scanner-cabang').value;
+  if (!selectedCabang) {
+    showScanError('✗ Silakan pilih cabang terlebih dahulu.');
     playAudioTone(false);
     return;
   }
-
+  
   try {
-    const { data: participant, error: pErr } = await db
-      .from('participants')
-      .select('id, participant_id, name, organization, event_id, events(name)')
-      .eq('participant_id', participantId)
-      .eq('event_id', selectedEventId)
+    const { data: emp, error: empErr } = await db
+      .from('employees')
+      .select('name, role')
+      .eq('employee_id', empId)
       .single();
-
-    if (pErr || !participant) {
-      showScanError(`Peserta "${participantId}" tidak terdaftar di event ini.`);
+      
+    if (empErr || !emp) {
+      showScanError(`✗ Karyawan dengan ID ${empId} tidak terdaftar.`);
       playAudioTone(false);
       return;
     }
-
-    const { data: existing } = await db
+    
+    const today = new Date().toLocaleDateString('en-CA', tz);
+    
+    const { data: todayRecords, error: dbErr } = await db
       .from('attendance')
-      .select('id')
-      .eq('participant_id', participant.id)
-      .eq('event_id', selectedEventId);
+      .select('status, created_at')
+      .eq('employee_id', empId)
+      .gte('created_at', today + 'T00:00:00+07:00')
+      .lte('created_at', today + 'T23:59:59+07:00');
+      
+    if (dbErr) throw dbErr;
+    
+    const hasCheckedIn = todayRecords ? todayRecords.some(r => r.status === 'hadir') : false;
+    const hasCheckedOut = todayRecords ? todayRecords.some(r => r.status === 'keluar') : false;
+    const checkinRecord = todayRecords ? todayRecords.find(r => r.status === 'hadir') : null;
 
-    if (existing && existing.length > 0) {
-      showScanError(`${participant.name} sudah tercatat hadir.`);
-      playAudioTone(false);
+    let absenType = 'hadir';
+
+    if (hasCheckedIn) {
+      if (hasCheckedOut) {
+        showScanError(`⚠ Karyawan ${emp.name} sudah absen masuk & keluar hari ini.`);
+        playAudioTone(false);
+        return;
+      } else {
+        absenType = 'keluar';
+      }
+    }
+
+    let lateMinutes = 0;
+    if (absenType === 'hadir') {
+      let roleJam = jamMasuk;
+      let roleTol = toleransiMenit;
+      if (typeof getJadwalForRole === 'function' && emp.role) {
+        const jadwal = getJadwalForRole(emp.role);
+        if (jadwal) {
+          roleJam = jadwal.jam_masuk;
+          roleTol = jadwal.toleransi_menit;
+        }
+      }
+      if (roleJam) {
+        const now = new Date();
+        const [h, m] = roleJam.split(':').map(Number);
+        const cutoff = new Date(now);
+        cutoff.setHours(h, m + roleTol, 0, 0);
+        if (now > cutoff) {
+          lateMinutes = Math.round((now - cutoff) / 60000);
+        }
+      }
+    }
+
+    if (absenType === 'keluar') {
+      const jamMasukTime = checkinRecord ? new Date(checkinRecord.created_at) : null;
+      const durasiStr = jamMasukTime ? formatDurasiKerja(jamMasukTime, new Date()) : null;
+      const jamMasukStr = jamMasukTime
+        ? jamMasukTime.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', ...tz })
+        : '--:--';
+
+      pendingKeluarData = { empId, emp, selectedCabang, checkinTime: jamMasukTime };
+
+      document.getElementById('confirm-keluar-name').textContent = emp.name;
+      document.getElementById('confirm-keluar-id').textContent = empId;
+      document.getElementById('confirm-keluar-jam-masuk').textContent = jamMasukStr;
+      document.getElementById('confirm-keluar-durasi').textContent = durasiStr || '--:--';
+      openModal('confirm-keluar');
       return;
     }
 
-    const { error: insertErr } = await db.from('attendance').insert({
-      participant_id: participant.id,
-      event_id: selectedEventId
-    });
-
-    if (insertErr) throw insertErr;
-
-    playAudioTone(true);
-    const eventName = participant.events ? participant.events.name : '—';
-    showScanSuccess(participantId, participant.name, participant.organization, eventName);
-
-    if (typeof loadKehadiran === 'function') loadKehadiran();
-    loadBelumScan();
-
+    await submitAbsen(empId, emp, selectedCabang, absenType, lateMinutes, null);
+    
   } catch (err) {
-    showScanError('Gagal mencatat kehadiran: ' + (err.message || err));
+    showScanError('✗ Gagal mencatat absensi: ' + (err.message || err));
     playAudioTone(false);
   }
 }
 
-// ===== PANEL BELUM SCAN =====
-async function loadBelumScan() {
-  const eventEl = document.getElementById('scanner-event');
-  const wrap = document.getElementById('belum-scan-wrap');
-  if (!eventEl || !wrap) return;
+async function submitAbsen(empId, emp, selectedCabang, absenType, lateMinutes, checkinTime) {
+  const notesStr = absenType === 'keluar'
+    ? 'Scan Keluar Kasir' + (checkinTime ? ` | Durasi ${formatDurasiKerja(checkinTime, new Date())}` : '')
+    : lateMinutes > 0
+      ? `Scan Masuk Kasir | Terlambat ${lateMinutes} mnt`
+      : 'Scan Masuk Kasir';
 
-  const eventId = eventEl.value;
-  if (!eventId) {
-    wrap.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">Pilih event untuk melihat data</div>';
+  const submitTime = new Date().toISOString();
+  const payload = {
+    employee_id: empId,
+    employee_name: emp.name,
+    cabang: selectedCabang,
+    status: absenType,
+    notes: notesStr
+  };
+
+  const { error: insertErr } = await db.from('attendance').insert(payload);
+  if (insertErr) throw insertErr;
+
+  playAudioTone(true);
+  const durasi = (absenType === 'keluar' && checkinTime) ? formatDurasiKerja(checkinTime, new Date()) : null;
+  showScanSuccess(empId, emp.name, emp.role || 'Barber', selectedCabang, absenType, submitTime, lateMinutes, durasi);
+
+  if (waEnabled && fonnteToken && waTarget && typeof sendWA === 'function') {
+    sendWA(empId, emp.name, submitTime, absenType);
+  }
+
+  if (typeof loadAbsensi === 'function') loadAbsensi();
+  if (typeof loadChartLine === 'function') loadChartLine();
+  loadBelumAbsen();
+}
+
+function formatDurasiKerja(start, end) {
+  const diffMs = end - start;
+  const totalMenit = Math.round(diffMs / 60000);
+  const jam = Math.floor(totalMenit / 60);
+  const menit = totalMenit % 60;
+  if (jam === 0) return `${menit} mnt`;
+  if (menit === 0) return `${jam} jam`;
+  return `${jam} jam ${menit} mnt`;
+}
+
+async function proceedKeluarConfirm() {
+  if (!pendingKeluarData) return;
+  const { empId, emp, selectedCabang, checkinTime } = pendingKeluarData;
+  pendingKeluarData = null;
+  closeModal('confirm-keluar');
+
+  try {
+    await submitAbsen(empId, emp, selectedCabang, 'keluar', 0, checkinTime);
+  } catch (err) {
+    showScanError('✗ Gagal mencatat absen keluar: ' + (err.message || err));
+    playAudioTone(false);
+  }
+}
+
+function cancelKeluarConfirm() {
+  pendingKeluarData = null;
+  closeModal('confirm-keluar');
+}
+
+// ===== PANEL BELUM ABSEN =====
+async function loadBelumAbsen() {
+  const cabangEl = document.getElementById('scanner-cabang');
+  const wrap = document.getElementById('belum-absen-wrap');
+  if (!cabangEl || !wrap) return;
+
+  const cabang = cabangEl.value;
+  if (!cabang) {
+    wrap.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">Pilih cabang untuk melihat data</div>';
     return;
   }
 
   wrap.innerHTML = '<div class="loading"><div class="spinner"></div>Memuat...</div>';
+  const today = new Date().toLocaleDateString('en-CA', tz);
 
-  const { data: allParticipants } = await db.from('participants').select('id, participant_id, name, organization').eq('event_id', eventId);
-  const { data: scanned } = await db.from('attendance').select('participant_id').eq('event_id', eventId);
+  let empQ = db.from('employees').select('employee_id, name, role').eq('cabang', cabang);
+  const { data: allEmps } = await empQ;
 
-  const scannedIds = new Set((scanned || []).map(a => a.participant_id));
-  const sudahHadir = (allParticipants || []).filter(p => scannedIds.has(p.id));
-  const belumHadir = (allParticipants || []).filter(p => !scannedIds.has(p.id));
+  let attQ = db.from('attendance').select('employee_id, status')
+    .gte('created_at', today + 'T00:00:00+07:00')
+    .lte('created_at', today + 'T23:59:59+07:00')
+    .eq('cabang', cabang);
+  const { data: todayAtt } = await attQ;
 
-  const totalP = (allParticipants || []).length;
-  if (!totalP) {
-    wrap.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">Belum ada peserta terdaftar di event ini</div>';
+  const recorded = {};
+  (todayAtt || []).forEach(r => {
+    if (!recorded[r.employee_id]) recorded[r.employee_id] = [];
+    recorded[r.employee_id].push(r.status);
+  });
+
+  const belumAbsen = (allEmps || []).filter(e => !recorded[e.employee_id]);
+  const sudahMasuk = (allEmps || []).filter(e => {
+    const st = recorded[e.employee_id];
+    return st && st.includes('hadir') && !st.includes('keluar');
+  });
+
+  if (!allEmps || !allEmps.length) {
+    wrap.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">Tidak ada karyawan di cabang ini</div>';
     return;
   }
 
-  const pct = Math.round((sudahHadir.length / totalP) * 100);
+  const totalEmp = allEmps.length;
+  const sudahAbsen = totalEmp - belumAbsen.length;
+  const pct = Math.round((sudahAbsen / totalEmp) * 100);
 
   let html = `
     <div style="margin-bottom:14px;">
       <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px;">
-        <span style="color:var(--muted);">Kehadiran</span>
-        <span style="color:var(--gold);font-weight:700;">${sudahHadir.length}/${totalP} (${pct}%)</span>
+        <span style="color:var(--muted);">Kehadiran hari ini</span>
+        <span style="color:var(--gold);font-weight:700;">${sudahAbsen}/${totalEmp} (${pct}%)</span>
       </div>
       <div style="width:100%;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;">
         <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--green),#5dca87);border-radius:4px;transition:width 0.5s;"></div>
@@ -357,53 +559,56 @@ async function loadBelumScan() {
     </div>
   `;
 
-  if (sudahHadir.length > 0) {
-    html += `<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--green);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
-      <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block;"></span> Sudah Hadir (${sudahHadir.length})
+  if (sudahMasuk.length > 0) {
+    html += `<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--blue);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+      <span style="width:8px;height:8px;background:var(--blue);border-radius:50%;display:inline-block;"></span> Sudah Masuk, Belum Pulang (${sudahMasuk.length})
     </div>`;
-    sudahHadir.forEach(p => {
-      const initials = p.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-      html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(39,174,96,0.06);border:1px solid rgba(39,174,96,0.15);border-radius:8px;margin-bottom:6px;">
-        <div style="width:32px;height:32px;border-radius:50%;background:rgba(39,174,96,0.15);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${initials}</div>
+    sudahMasuk.forEach(e => {
+      const initials = e.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(41,128,185,0.06);border:1px solid rgba(41,128,185,0.15);border-radius:8px;margin-bottom:6px;">
+        <div style="width:32px;height:32px;border-radius:50%;background:rgba(41,128,185,0.15);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${initials}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(p.name)}</div>
-          <div style="font-size:10px;color:var(--muted);">${escapeHtml(p.participant_id)} · ${escapeHtml(p.organization || '—')}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(e.name)}</div>
+          <div style="font-size:10px;color:var(--muted);">${escapeHtml(e.employee_id)} · ${escapeHtml(e.role || '—')}</div>
         </div>
-        <span class="badge b-green" style="font-size:9px;flex-shrink:0;">Hadir</span>
+        <span class="badge b-blue" style="font-size:9px;flex-shrink:0;">Masuk</span>
       </div>`;
     });
   }
 
-  if (belumHadir.length > 0) {
+  if (belumAbsen.length > 0) {
     html += `<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--red);font-weight:600;margin:12px 0 8px;display:flex;align-items:center;gap:6px;">
-      <span style="width:8px;height:8px;background:var(--red);border-radius:50%;display:inline-block;"></span> Belum Hadir (${belumHadir.length})
+      <span style="width:8px;height:8px;background:var(--red);border-radius:50%;display:inline-block;"></span> Belum Absen (${belumAbsen.length})
     </div>`;
-    belumHadir.forEach(p => {
-      const initials = p.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    belumAbsen.forEach(e => {
+      const initials = e.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
       html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(192,57,43,0.06);border:1px solid rgba(192,57,43,0.15);border-radius:8px;margin-bottom:6px;">
         <div style="width:32px;height:32px;border-radius:50%;background:rgba(192,57,43,0.15);color:#e57373;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${initials}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(p.name)}</div>
-          <div style="font-size:10px;color:var(--muted);">${escapeHtml(p.participant_id)} · ${escapeHtml(p.organization || '—')}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(e.name)}</div>
+          <div style="font-size:10px;color:var(--muted);">${escapeHtml(e.employee_id)} · ${escapeHtml(e.role || '—')}</div>
         </div>
         <span class="badge b-red" style="font-size:9px;flex-shrink:0;">Belum</span>
       </div>`;
     });
   }
 
-  if (belumHadir.length === 0) {
-    html += '<div style="text-align:center;padding:16px;color:var(--green);font-size:13px;font-weight:600;">✓ Semua peserta sudah hadir!</div>';
+  if (belumAbsen.length === 0 && sudahMasuk.length === 0) {
+    html += '<div style="text-align:center;padding:16px;color:var(--green);font-size:13px;font-weight:600;">✓ Semua karyawan sudah absen masuk & pulang hari ini!</div>';
   }
 
   wrap.innerHTML = html;
 }
 
+// Auto-refresh panel Belum Absen
 setInterval(() => {
-  const eventEl = document.getElementById('scanner-event');
-  if (eventEl && eventEl.value) loadBelumScan();
+  const cabang = document.getElementById('scanner-cabang');
+  if (cabang && cabang.value) loadBelumAbsen();
 }, 2 * 60 * 1000);
 
 document.addEventListener('DOMContentLoaded', () => {
-  const scanEvent = document.getElementById('scanner-event');
-  if (scanEvent) scanEvent.addEventListener('change', () => loadBelumScan());
+  const scanCabang = document.getElementById('scanner-cabang');
+  if (scanCabang) {
+    scanCabang.addEventListener('change', () => loadBelumAbsen());
+  }
 });

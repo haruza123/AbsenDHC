@@ -1,8 +1,9 @@
 // ============================================================
 // KONFIGURASI SUPABASE & VARIABEL GLOBAL
 // ============================================================
-const DEFAULT_SUPABASE_URL = "https://qdosspgddxzcrvazljfn.supabase.co";
-const DEFAULT_SUPABASE_ANON_KEY = "sb_publishable_Ck82tAWBFrcyEwMMUjVoWw_oQuyU5sP";
+const DEFAULT_SUPABASE_URL = "https://xyqsueykuijjrqqbusmg.supabase.co";
+const DEFAULT_SUPABASE_ANON_KEY =
+  "sb_publishable_z_5mjpEzHQBgonB5hC4_6A_WF_vj4wK";
 
 const SUPABASE_URL = localStorage.getItem("sb_url") || DEFAULT_SUPABASE_URL;
 const SUPABASE_ANON_KEY =
@@ -16,15 +17,17 @@ let allRows = [],
 const PAGE_SIZE = 15;
 let lineChart = null,
   doughnutChart = null;
-let eventList = [];
+let cabangList = [];
 const tz = { timeZone: "Asia/Jakarta" };
+let jamMasuk = "09:00";
+let toleransiMenit = 0;
 let loggedInUserEmail = "Unknown Admin";
 
 // Scanner variables
 let html5QrCode = null;
 let isScanning = false;
 let lastScanTime = 0;
-const SCAN_COOLDOWN = 4000;
+const SCAN_COOLDOWN = 4000; // 4 seconds cooldown between scans
 let cooldownTimerInterval = null;
 
 // Settings variables
@@ -101,8 +104,9 @@ function playAudioTone(success) {
     gainNode.connect(audioCtx.destination);
 
     if (success) {
+      // Success beep: high tone, short
       oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
       gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
       oscillator.start();
       gainNode.gain.exponentialRampToValueAtTime(
@@ -111,6 +115,7 @@ function playAudioTone(success) {
       );
       oscillator.stop(audioCtx.currentTime + 0.15);
     } else {
+      // Error buzzer: low sawtooth tone
       oscillator.type = "sawtooth";
       oscillator.frequency.setValueAtTime(120, audioCtx.currentTime);
       gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);

@@ -18,4 +18,4 @@ jobs:
           curl --fail --silent --show-error --retry 2 \
             -H "apikey: $SUPABASE_ANON_KEY" \
             -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
-            "$SUPABASE_URL/rest/v1/events?select=id&limit=1"
+            "$SUPABASE_URL/rest/v1/cabang?select=id&limit=1"

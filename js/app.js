@@ -6,49 +6,90 @@ function startApp() {
   const overlay = document.getElementById('login-overlay');
   if (overlay) overlay.style.display = 'none';
 
-  loadEventList().then(() => {
-    if (typeof loadBelumScan === 'function') loadBelumScan();
+  const today = new Date().toLocaleDateString('en-CA', tz);
+  const filterDate = document.getElementById('filter-date');
+  const filterMonth = document.getElementById('filter-month');
+  const miDate = document.getElementById('mi-date');
+  const todayLabel = document.getElementById('today-label');
+
+  if (filterDate) filterDate.value = today;
+  if (filterMonth) filterMonth.value = today.slice(0, 7);
+  if (miDate) miDate.value = today;
+  if (todayLabel) {
+    todayLabel.textContent = new Date().toLocaleDateString('id-ID', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', ...tz
+    });
+  }
+
+  loadCabangList().then(() => {
+    if (typeof loadBelumAbsen === 'function') loadBelumAbsen();
   });
+  if (typeof loadJadwalRoleCache === 'function') loadJadwalRoleCache();
+  loadRoleList();
 
   const scannerNavItem = document.querySelector('.nav-item[data-sec="scanner"]');
   showSection('scanner', scannerNavItem);
-
-  if (typeof loadKehadiran === 'function') loadKehadiran();
+  
+  if (typeof loadAbsensi === 'function') loadAbsensi();
+  if (typeof loadChartLine === 'function') loadChartLine();
   if (typeof loadSettings === 'function') loadSettings();
   if (typeof setupRealtime === 'function') setupRealtime();
 }
 
-// ===== EVENT LIST (populate dropdowns) =====
-async function loadEventList() {
-  const { data } = await db.from('events').select('id, event_code, name, date').order('date', { ascending: false });
-  eventList = data || [];
-
+// ===== CABANG LIST (dari tabel cabang) =====
+async function loadCabangList() {
+  const { data } = await db.from('cabang').select('nama').order('nama');
+  const unique = (data || []).map(r => r.nama).filter(Boolean);
+  cabangList = unique;
   const selectors = [
-    'filter-event-kehadiran', 'filter-event-peserta',
-    'scanner-event', 'mp-event'
+    'filter-cabang-absensi', 'filter-cabang-rekap', 'filter-cabang-izin',
+    'filter-cabang-karyawan', 'mi-cabang', 'mk-cabang', 'scanner-cabang', 'mek-cabang'
   ];
 
-  selectors.forEach(elId => {
-    const el = document.getElementById(elId);
+  selectors.forEach(id => {
+    const el = document.getElementById(id);
     if (!el) return;
+    const isSelect = el.tagName === 'SELECT';
+    const isFilter = id.startsWith('filter') || id === 'scanner-cabang';
+    const extra = isFilter
+      ? '<option value="">Pilih Cabang...</option>'
+      : (unique.length > 0 ? '' : '<option value="">— Belum ada cabang —</option>');
 
-    const isFilter = elId.startsWith('filter') || elId === 'scanner-event';
+    if (isSelect) {
+      const cur = el.value;
+      el.innerHTML = extra + unique.map(c => `<option value="${c}">${c}</option>`).join('');
+      if (cur && unique.includes(cur)) {
+        el.value = cur;
+      } else if (unique.length > 0 && !isFilter) {
+        el.value = unique[0];
+      }
+    }
+  });
+}
+
+// ===== ROLE LIST (dari tabel jadwal_role) =====
+async function loadRoleList() {
+  const { data } = await db.from('jadwal_role').select('nama_role').order('nama_role');
+  const roles = (data || []).map(r => r.nama_role).filter(Boolean);
+  const selectors = ['mk-role', 'mek-role'];
+
+  selectors.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el || el.tagName !== 'SELECT') return;
     const cur = el.value;
-    const placeholder = isFilter ? '<option value="">Pilih Event...</option>' : '<option value="">Pilih Event...</option>';
-
-    el.innerHTML = placeholder + eventList.map(e => {
-      const dateStr = new Date(e.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-      return `<option value="${e.id}">${escapeHtml(e.name)} (${dateStr})</option>`;
-    }).join('');
-
-    if (cur && eventList.some(e => e.id === cur)) {
-      el.value = cur;
+    const empty = roles.length > 0
+      ? '<option value="">Pilih Jabatan...</option>'
+      : '<option value="">— Tambah role di Jadwal Role —</option>';
+    el.innerHTML = empty + roles.map(r => `<option value="${r}">${r}</option>`).join('');
+    if (cur && roles.some(r => r.toLowerCase() === cur.toLowerCase())) {
+      el.value = roles.find(r => r.toLowerCase() === cur.toLowerCase());
     }
   });
 }
 
 // ===== NAVIGASI TAB =====
 function showSection(name, el) {
+  // Matikan kamera jika navigasi keluar dari Scanner Kasir
   if (name !== 'scanner' && typeof isScanning !== 'undefined' && isScanning && typeof toggleScanner === 'function') {
     toggleScanner();
   }
@@ -60,10 +101,14 @@ function showSection(name, el) {
   document.querySelectorAll('.nav-item[data-sec]').forEach(n => n.classList.toggle('active', n.dataset.sec === name));
   document.querySelectorAll('.bottom-nav-item[data-sec]').forEach(n => n.classList.toggle('active', n.dataset.sec === name));
 
-  if (name === 'kehadiran' && typeof loadKehadiran === 'function') loadKehadiran();
-  if (name === 'events' && typeof loadEvents === 'function') loadEvents();
-  if (name === 'peserta' && typeof loadPeserta === 'function') loadPeserta();
+  if (name === 'absensi' && typeof loadAbsensi === 'function') loadAbsensi();
+  if (name === 'rekap' && typeof loadRekap === 'function') loadRekap();
+  if (name === 'izin' && typeof loadIzinList === 'function') loadIzinList();
+  if (name === 'cabang' && typeof loadCabang === 'function') loadCabang();
+  if (name === 'jadwal' && typeof loadJadwal === 'function') loadJadwal();
+  if (name === 'karyawan' && typeof loadKaryawan === 'function') loadKaryawan();
   if (name === 'settings' && typeof loadSettings === 'function') loadSettings();
+  if (name === 'rapor' && typeof loadRaporEmpList === 'function') loadRaporEmpList();
 }
 
 // ===== MODAL MANAGER =====
@@ -83,6 +128,16 @@ document.querySelectorAll('.modal-overlay').forEach(el => {
   });
 });
 
+// Update preview saat tanggal modal izin berubah
+['mi-date', 'mi-date-end'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('change', () => {
+      if (typeof updateIzinPreview === 'function') updateIzinPreview();
+    });
+  }
+});
+
 // ===== HAMBURGER & SIDEBAR MOBILE =====
 function toggleSidebar() {
   const sidebar = document.querySelector('.sidebar');
@@ -95,13 +150,14 @@ function toggleSidebar() {
   if (btn) btn.classList.toggle('open', isOpen);
 }
 
+// Tutup sidebar saat klik item menu di mobile
 document.querySelectorAll('.nav-item[data-sec]').forEach(el => {
   el.addEventListener('click', () => {
     if (window.innerWidth <= 900) toggleSidebar();
   });
 });
 
-// Inisialisasi Auth
+// Inisialisasi Auth saat DOM selesai dimuat
 document.addEventListener('DOMContentLoaded', () => {
   initAuth();
 });
