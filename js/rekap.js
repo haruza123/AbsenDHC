@@ -68,9 +68,11 @@ async function loadRekap() {
     return;
   }
   
+  window._rekapRawData = data || [];
+
   const tbody = emps.map(e => `<tr>
     <td><span class="id-chip">${escapeHtml(e.id)}</span></td>
-    <td>${escapeHtml(e.name)}</td>
+    <td><a href="javascript:void(0)" onclick="showDetailRekap('${escapeHtml(e.id)}','${escapeHtml(e.name)}')" style="color:var(--text);text-decoration:underline;text-decoration-color:var(--gold);text-underline-offset:3px;cursor:pointer;font-weight:500;">${escapeHtml(e.name)}</a></td>
     <td><span class="badge b-gold">${escapeHtml(e.cabang)}</span></td>
     <td><span class="badge b-green">${e.hadir}</span></td>
     <td><span class="badge b-yellow" title="${formatMenitKeJam(e.total_mnt_telat)} total">${e.terlambat}x${e.terlambat > 0 ? ` <span style="font-size:10px;opacity:0.7;">(${formatMenitKeJam(e.total_mnt_telat)})</span>` : ''}</span></td>
@@ -379,4 +381,92 @@ function printRekap() {
   document.body.classList.add('printing-rekap');
   window.print();
   setTimeout(() => document.body.classList.remove('printing-rekap'), 500);
+}
+
+function showDetailRekap(empId, empName) {
+  const raw = window._rekapRawData || [];
+  const empRows = raw.filter(r => r.employee_id === empId);
+
+  if (!empRows.length) {
+    alert('Tidak ada data absensi untuk karyawan ini.');
+    return;
+  }
+
+  const titleEl = document.getElementById('mdr-title');
+  const contentEl = document.getElementById('mdr-content');
+  const month = document.getElementById('filter-month').value;
+  const monthLabel = month ? new Date(month + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '';
+
+  titleEl.textContent = `Detail Absensi: ${empName} — ${monthLabel}`;
+
+  const byDay = {};
+  empRows.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).forEach(r => {
+    const day = new Date(r.created_at).toLocaleDateString('en-CA', tz);
+    if (!byDay[day]) byDay[day] = [];
+    byDay[day].push(r);
+  });
+
+  let html = '<table style="width:100%;font-size:12px;"><thead><tr>' +
+    '<th style="text-align:left;">Tanggal</th>' +
+    '<th>Masuk</th>' +
+    '<th>Keluar</th>' +
+    '<th>Status</th>' +
+    '<th>Durasi</th>' +
+    '<th style="text-align:left;">Keterangan</th>' +
+    '</tr></thead><tbody>';
+
+  Object.keys(byDay).sort().forEach(day => {
+    const rows = byDay[day];
+    const dayLabel = new Date(day).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', ...tz });
+    const masuk = rows.find(r => r.status === 'hadir');
+    const keluar = rows.find(r => r.status === 'keluar');
+    const izinRow = rows.find(r => ['izin', 'sakit', 'alpha', 'libur'].includes(r.status));
+
+    const masukTime = masuk ? new Date(masuk.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', ...tz }) : '—';
+    const keluarTime = keluar ? new Date(keluar.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', ...tz }) : '—';
+
+    let durasi = '—';
+    if (masuk && keluar) {
+      const diffMs = new Date(keluar.created_at) - new Date(masuk.created_at);
+      const totalMnt = Math.round(diffMs / 60000);
+      const jam = Math.floor(totalMnt / 60);
+      const mnt = totalMnt % 60;
+      durasi = jam > 0 ? `${jam}j ${mnt}m` : `${mnt}m`;
+    }
+
+    let statusBadge = '';
+    let keterangan = '';
+    if (izinRow && !masuk) {
+      const sMap = { izin: 'b-yellow', sakit: 'b-blue', alpha: 'b-red', libur: 'b-gold' };
+      statusBadge = `<span class="badge ${sMap[izinRow.status] || 'b-yellow'}">${escapeHtml(izinRow.status)}</span>`;
+      keterangan = escapeHtml(izinRow.notes || '—');
+    } else if (masuk) {
+      const lateMatch = masuk.notes && masuk.notes.match(/Terlambat (\d+) mnt/);
+      if (lateMatch) {
+        statusBadge = `<span class="badge b-yellow">Terlambat +${lateMatch[1]}m</span>`;
+        keterangan = escapeHtml(masuk.notes || '');
+      } else {
+        statusBadge = '<span class="badge b-green">Tepat Waktu</span>';
+        keterangan = escapeHtml(masuk.notes || '—');
+      }
+    } else {
+      statusBadge = '<span style="color:var(--muted);">—</span>';
+    }
+
+    const isWeekend = [0, 6].includes(new Date(day).getDay());
+    const rowBg = isWeekend ? 'background:rgba(201,169,110,0.05);' : '';
+
+    html += `<tr style="${rowBg}">
+      <td style="padding:8px 6px;font-weight:600;white-space:nowrap;">${dayLabel}</td>
+      <td style="padding:8px 6px;text-align:center;">${masukTime}</td>
+      <td style="padding:8px 6px;text-align:center;">${keluarTime}</td>
+      <td style="padding:8px 6px;text-align:center;">${statusBadge}</td>
+      <td style="padding:8px 6px;text-align:center;color:var(--blue-light,#7ec8e3);font-weight:600;">${durasi}</td>
+      <td style="padding:8px 6px;color:var(--muted);font-size:11px;">${keterangan}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  contentEl.innerHTML = html;
+  openModal('detail-rekap');
 }

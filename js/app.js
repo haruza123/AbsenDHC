@@ -112,7 +112,20 @@ function showSection(name, el) {
 }
 
 // ===== MODAL MANAGER =====
-function openModal(name) {
+async function openModal(name) {
+  if (name === 'manual-absen') {
+    const { data } = await db.from('employees').select('employee_id, name').order('name');
+    const el = document.getElementById('ma-employee');
+    if (el) {
+      el.innerHTML = '<option value="">Pilih Karyawan...</option>' +
+        (data || []).map(e => `<option value="${escapeHtml(e.employee_id)}">${escapeHtml(e.name)} (${escapeHtml(e.employee_id)})</option>`).join('');
+    }
+    const cabEl = document.getElementById('ma-cabang');
+    if (cabEl) {
+      cabEl.innerHTML = '<option value="">Pilih Cabang...</option>' +
+        cabangList.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+  }
   const modal = document.getElementById('modal-' + name);
   if (modal) modal.classList.add('show');
 }

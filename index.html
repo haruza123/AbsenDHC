@@ -286,6 +286,7 @@
         <button class="btn btn-ghost" onclick="sendDailyRecapWA()">📱 Kirim Rekap WA</button>
         <button class="btn btn-danger" style="font-size:13px; padding:9px 14px;" onclick="autoMarkAlpha()">⚠️ Tandai Alpha Otomatis</button>
         <button class="btn btn-gold" onclick="openModal('izin')">+ Izin / Libur / Alpha</button>
+        <button class="btn btn-outline" onclick="openModal('manual-absen')">✏️ Input Manual</button>
       </div>
     </div>
     <div class="filters">
@@ -759,6 +760,94 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('edit-jadwal')">Batal</button>
       <button class="btn btn-gold" onclick="submitEditJadwal()">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: INPUT ABSENSI MANUAL -->
+<div class="modal-overlay" id="modal-manual-absen">
+  <div class="modal">
+    <div class="modal-title">Input Absensi Manual</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="field-label">Karyawan *</label>
+        <select class="field-input" id="ma-employee"><option value="">Pilih Karyawan...</option></select>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Cabang *</label>
+        <select class="field-input" id="ma-cabang"><option value="">Pilih Cabang...</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="field-label">Status *</label>
+        <select class="field-input" id="ma-status">
+          <option value="hadir">Masuk (Hadir)</option>
+          <option value="keluar">Keluar (Pulang)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Jam (opsional, kosong = sekarang)</label>
+        <input class="field-input" type="time" id="ma-waktu" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="field-label">Catatan</label>
+      <input class="field-input" type="text" id="ma-notes" placeholder="Input Manual Admin" />
+    </div>
+    <div id="ma-msg" class="save-msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('manual-absen')">Batal</button>
+      <button class="btn btn-gold" onclick="submitManualAbsen()">Simpan Absensi</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT ABSENSI -->
+<div class="modal-overlay" id="modal-edit-absensi">
+  <div class="modal">
+    <div class="modal-title">Edit Data Absensi</div>
+    <input type="hidden" id="mea-id" />
+    <div class="form-group">
+      <label class="field-label">Karyawan</label>
+      <div id="mea-emp-label" style="padding:8px 12px;background:var(--surface2);border-radius:8px;font-weight:600;color:var(--gold-light);">—</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="field-label">Waktu</label>
+        <div id="mea-time-label" style="padding:8px 12px;background:var(--surface2);border-radius:8px;color:var(--muted);">—</div>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Status</label>
+        <select class="field-input" id="mea-status">
+          <option value="hadir">Masuk (Hadir)</option>
+          <option value="keluar">Keluar (Pulang)</option>
+          <option value="izin">Izin</option>
+          <option value="sakit">Sakit</option>
+          <option value="libur">Libur</option>
+          <option value="alpha">Alpha</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="field-label">Catatan / Notes</label>
+      <input class="field-input" type="text" id="mea-notes" placeholder="Ubah catatan..." />
+    </div>
+    <div id="mea-msg" class="save-msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('edit-absensi')">Batal</button>
+      <button class="btn btn-gold" onclick="submitEditAbsensi()">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DETAIL REKAP KARYAWAN -->
+<div class="modal-overlay" id="modal-detail-rekap">
+  <div class="modal" style="max-width:650px;">
+    <div class="modal-title" id="mdr-title">Detail Absensi</div>
+    <div id="mdr-content" style="max-height:60vh;overflow-y:auto;"><div class="loading"><div class="spinner"></div>Memuat...</div></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('detail-rekap')">Tutup</button>
     </div>
   </div>
 </div>

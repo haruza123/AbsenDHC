@@ -120,7 +120,10 @@ function renderTable() {
       <td><span class="badge ${bc}">${bl}</span></td>
       <td>${durasiHtml}</td>
       <td><span style="color: var(--muted); font-size:12px">${escapeHtml(r.notes || '—')}</span></td>
-      <td><button class="btn btn-danger" onclick="deleteRow('${escapeHtml(r.id)}')">Hapus</button></td>
+      <td style="text-align:right;">
+        <button class="btn btn-outline" style="font-size:11px;padding:5px 10px;margin-right:6px;" onclick="editAbsensi('${escapeHtml(r.id)}')">✏️ Edit</button>
+        <button class="btn btn-danger" onclick="deleteRow('${escapeHtml(r.id)}')">Hapus</button>
+      </td>
     </tr>`;
   }).join('');
 
@@ -219,6 +222,88 @@ async function logDeletionEvent(record) {
   } catch (err) {
     console.error('Gagal mencatat log penghapusan:', err);
   }
+}
+
+// ===== INPUT ABSENSI MANUAL =====
+async function submitManualAbsen() {
+  const empId = document.getElementById('ma-employee').value;
+  const cabang = document.getElementById('ma-cabang').value;
+  const status = document.getElementById('ma-status').value;
+  const waktu = document.getElementById('ma-waktu').value;
+  const notes = document.getElementById('ma-notes').value.trim();
+  const msg = document.getElementById('ma-msg');
+
+  if (!empId || !cabang || !status) {
+    msg.className = 'save-msg err'; msg.textContent = 'Karyawan, cabang, dan status wajib diisi.'; msg.style.display = 'block';
+    setTimeout(() => { msg.style.display = 'none'; }, 3000);
+    return;
+  }
+
+  const { data: emp } = await db.from('employees').select('name').eq('employee_id', empId).single();
+  const empName = emp ? emp.name : empId;
+
+  let createdAt;
+  if (waktu) {
+    const dateStr = document.getElementById('filter-date').value || new Date().toLocaleDateString('en-CA', tz);
+    createdAt = new Date(dateStr + 'T' + waktu + ':00+07:00').toISOString();
+  } else {
+    createdAt = new Date().toISOString();
+  }
+
+  const payload = {
+    employee_id: empId,
+    employee_name: empName,
+    cabang,
+    status,
+    notes: notes || 'Input Manual Admin',
+    created_at: createdAt
+  };
+
+  const { error } = await db.from('attendance').insert(payload);
+  if (error) {
+    msg.className = 'save-msg err'; msg.textContent = error.message;
+  } else {
+    msg.className = 'save-msg ok'; msg.textContent = `✓ Absensi ${empName} (${status}) berhasil dicatat.`;
+    loadAbsensi();
+    if (typeof loadBelumAbsen === 'function') loadBelumAbsen();
+    setTimeout(() => closeModal('manual-absen'), 1500);
+  }
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 3000);
+}
+
+// ===== EDIT DATA ABSENSI =====
+async function editAbsensi(id) {
+  const { data, error } = await db.from('attendance').select('*').eq('id', id).single();
+  if (error || !data) { alert('Gagal mengambil data.'); return; }
+
+  document.getElementById('mea-id').value = data.id;
+  document.getElementById('mea-emp-label').textContent = `${data.employee_name || '—'} (${data.employee_id})`;
+  document.getElementById('mea-status').value = data.status;
+  document.getElementById('mea-notes').value = data.notes || '';
+
+  const time = new Date(data.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', ...tz });
+  document.getElementById('mea-time-label').textContent = time;
+
+  openModal('edit-absensi');
+}
+
+async function submitEditAbsensi() {
+  const id = document.getElementById('mea-id').value;
+  const status = document.getElementById('mea-status').value;
+  const notes = document.getElementById('mea-notes').value.trim();
+  const msg = document.getElementById('mea-msg');
+
+  const { error } = await db.from('attendance').update({ status, notes: notes || null }).eq('id', id);
+  if (error) {
+    msg.className = 'save-msg err'; msg.textContent = error.message;
+  } else {
+    msg.className = 'save-msg ok'; msg.textContent = '✓ Data absensi diperbarui.';
+    loadAbsensi();
+    setTimeout(() => closeModal('edit-absensi'), 1200);
+  }
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 3000);
 }
 
 // ===== CHARTS =====
