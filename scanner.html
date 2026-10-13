@@ -217,6 +217,9 @@
             <div><span style="color: var(--muted);">Waktu:</span> <strong id="scan-result-time" style="color: var(--text);">--:--</strong></div>
             <div><span style="color: var(--muted);">Cabang:</span> <strong id="scan-result-cabang" style="color: var(--text);">Pusat</strong></div>
           </div>
+          <div id="scan-result-durasi-row" style="display: none; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; margin-top: 12px; font-size: 13px; text-align: left;">
+            <span style="color: var(--muted);">Total Jam Kerja:</span> <strong id="scan-result-durasi" style="color: var(--gold-light);">—</strong>
+          </div>
         </div>
         
         <!-- Error Box -->
@@ -269,6 +272,7 @@
 <!-- Modular Scripts -->
 <script src="js/config.js"></script>
 <script src="js/settings.js"></script>
+<script src="js/jadwal.js"></script>
 <script src="js/scanner.js"></script>
 <script>
   // Helper modal (app.js tidak dimuat di halaman kios)
@@ -290,6 +294,9 @@
       if (e.target === confirmKeluarOverlay) cancelKeluarConfirm();
     });
   }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') cancelKeluarConfirm();
+  });
 </script>
 <script>
   // Inisialisasi Kios Scanner
@@ -326,7 +333,12 @@
       loadSettings();
     }
 
-    // 3. Muat status belum absen
+    // 3. Muat jadwal kerja spesifik per role / jabatan
+    if (typeof loadJadwalRoleCache === 'function') {
+      loadJadwalRoleCache();
+    }
+
+    // 4. Muat status belum absen
     if (typeof loadBelumAbsen === 'function') {
       loadBelumAbsen();
     }

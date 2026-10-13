@@ -429,6 +429,11 @@ async function processAbsenScanner(empId) {
       document.getElementById('confirm-keluar-id').textContent = empId;
       document.getElementById('confirm-keluar-jam-masuk').textContent = jamMasukStr;
       document.getElementById('confirm-keluar-durasi').textContent = durasiStr || '--:--';
+      const btnConfirm = document.getElementById('btn-confirm-keluar');
+      if (btnConfirm) {
+        btnConfirm.disabled = false;
+        btnConfirm.textContent = 'Ya, Absen Pulang';
+      }
       openModal('confirm-keluar');
       return;
     }
@@ -485,6 +490,11 @@ function formatDurasiKerja(start, end) {
 
 async function proceedKeluarConfirm() {
   if (!pendingKeluarData) return;
+  const btnConfirm = document.getElementById('btn-confirm-keluar');
+  if (btnConfirm) {
+    btnConfirm.disabled = true;
+    btnConfirm.textContent = 'Menyimpan...';
+  }
   const { empId, emp, selectedCabang, checkinTime } = pendingKeluarData;
   pendingKeluarData = null;
   closeModal('confirm-keluar');
@@ -494,6 +504,11 @@ async function proceedKeluarConfirm() {
   } catch (err) {
     showScanError('✗ Gagal mencatat absen keluar: ' + (err.message || err));
     playAudioTone(false);
+  } finally {
+    if (btnConfirm) {
+      btnConfirm.disabled = false;
+      btnConfirm.textContent = 'Ya, Absen Pulang';
+    }
   }
 }
 
