@@ -245,10 +245,52 @@
   BHC Professional Attendance & Cashier System &copy; 2026 &middot; Mode Layar Penuh Kios Kasir
 </footer>
 
+<!-- MODAL KONFIRMASI ABSEN KELUAR -->
+<div class="modal-overlay" id="modal-confirm-keluar">
+  <div class="modal" style="max-width: 380px; text-align: center;">
+    <div style="font-size: 40px; margin-bottom: 12px;">📤</div>
+    <div class="modal-title" style="text-align: center;">Konfirmasi Absen Pulang</div>
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 6px;">Karyawan berikut akan dicatat <strong style="color: var(--blue-light, #7ec8e3);">pulang</strong>:</p>
+    <div style="background: var(--surface2); border: 1px solid var(--gold-border); border-radius: 10px; padding: 14px; margin: 12px 0;">
+      <div id="confirm-keluar-name" style="font-family: 'Playfair Display', serif; font-size: 16px; color: var(--gold-light); font-weight: 700;">-</div>
+      <div id="confirm-keluar-id" style="font-family: monospace; font-size: 12px; color: var(--muted); margin-top: 4px;">-</div>
+      <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">
+        Masuk: <strong id="confirm-keluar-jam-masuk" style="color: var(--green);">--:--</strong>
+        &nbsp;|&nbsp; Durasi kerja: <strong id="confirm-keluar-durasi" style="color: var(--gold-light);">--:--</strong>
+      </div>
+    </div>
+    <div class="modal-actions" style="justify-content: center; gap: 12px;">
+      <button class="btn btn-ghost" onclick="cancelKeluarConfirm()">Batal</button>
+      <button class="btn btn-gold" id="btn-confirm-keluar" onclick="proceedKeluarConfirm()">Ya, Absen Pulang</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modular Scripts -->
 <script src="js/config.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/scanner.js"></script>
+<script>
+  // Helper modal (app.js tidak dimuat di halaman kios)
+  if (typeof openModal !== 'function') {
+    window.openModal = function (name) {
+      const modal = document.getElementById('modal-' + name);
+      if (modal) modal.classList.add('show');
+    };
+  }
+  if (typeof closeModal !== 'function') {
+    window.closeModal = function (name) {
+      const modal = document.getElementById('modal-' + name);
+      if (modal) modal.classList.remove('show');
+    };
+  }
+  const confirmKeluarOverlay = document.getElementById('modal-confirm-keluar');
+  if (confirmKeluarOverlay) {
+    confirmKeluarOverlay.addEventListener('click', e => {
+      if (e.target === confirmKeluarOverlay) cancelKeluarConfirm();
+    });
+  }
+</script>
 <script>
   // Inisialisasi Kios Scanner
   document.addEventListener('DOMContentLoaded', async () => {
